@@ -25,7 +25,7 @@ func remove952(r *marc.Record) {
 	for i, d := range r.DataFields {
 		if d.Tag == "952" {
 			// datafields are sorted (after Eq check), so we can easily by slicing
-			r.DataFields = r.DataFields[:i-1]
+			r.DataFields = r.DataFields[:i]
 			break
 		}
 	}
@@ -216,15 +216,6 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     </datafield>
     <datafield tag="942" ind1=" " ind2=" ">
         <subfield code="y">X</subfield>
-    </datafield>
-    <datafield tag="952" ind1=" " ind2=" ">
-        <subfield code="t">1</subfield>
-        <subfield code="p">03010192529001</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
-        <subfield code="c">m</subfield>
-        <subfield code="l">8</subfield>
-        <subfield code="y">28</subfield>
     </datafield>
 </record>
 </collection>`
@@ -455,7 +446,7 @@ ex_strek |-1245593|
 ^
 ex_titnr |192529|
 ex_exnr |1|
-ex_avd |hutl|
+ex_avd |dfb|
 ex_plass |m|
 ex_hylle ||
 ex_note ||

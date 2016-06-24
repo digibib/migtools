@@ -134,11 +134,6 @@ func (m *Main) Run() error {
 			continue
 		}
 
-		// write MARCXML record, before merging in items
-		if err := encMARCXML.Encode(r); err != nil {
-			return err
-		}
-
 		tnr := titleNumber(&r)
 		tnrInt, err := strconv.Atoi(tnr)
 		if err != nil {
@@ -155,8 +150,15 @@ func (m *Main) Run() error {
 		}
 		r.DataFields = append(r.DataFields, marc.DField{
 			Tag:       "942",
+			Ind1:      " ",
+			Ind2:      " ",
 			SubFields: marc.SubFields{marc.SubField{Code: "y", Value: v}},
 		})
+
+		// write MARCXML record, before merging in items
+		if err := encMARCXML.Encode(r); err != nil {
+			return err
+		}
 
 		if pos, ok := exemp[tnr]; ok {
 			// seek to first occurence of titlenumber in exemp database
@@ -206,11 +208,13 @@ func (m *Main) Run() error {
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
 
-						// Keep track of which branchcodes that are found
-						if bLabel, ok := branchCodes[bCode]; ok {
-							m.branches[bCode] = bLabel
-						} else {
-							m.branches[bCode] = "Missing label for branch: " + bCode
+						// Keep track of which branchcodes that are found, ignoring dfb
+						if bCode != "dfb" {
+							if bLabel, ok := branchCodes[bCode]; ok {
+								m.branches[bCode] = bLabel
+							} else {
+								m.branches[bCode] = "Missing label for branch: " + bCode
+							}
 						}
 					case "ex_plass":
 						// 952$c shelving location (authorized value? TODO check)
@@ -322,8 +326,10 @@ func (m *Main) Run() error {
 					// TODO ikke til utlån? eller skal de ligge i Not for loan-statuskodene?
 					f.SubFields = append(f.SubFields, marc.SubField{Code: "y", Value: iType})
 
-					r.DataFields = append(r.DataFields, f)
-					f = marc.DField{Tag: "952"}
+					if !belongsToDFB(f) {
+						r.DataFields = append(r.DataFields, f)
+					}
+					f = marc.DField{Tag: "952"} // start from anew
 
 					if onLoan {
 						// write CSV row to loan.csv
@@ -397,6 +403,15 @@ func firstVal(r *marc.Record, tag string, code string) string {
 		}
 	}
 	return ""
+}
+
+func belongsToDFB(f marc.DField) bool {
+	for _, s := range f.SubFields {
+		if s.Code == "a" && s.Value == "dfb" {
+			return true
+		}
+	}
+	return false
 }
 
 // getValue returns the value from an line in exemplar database.
