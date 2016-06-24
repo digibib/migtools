@@ -4,61 +4,52 @@ import "github.com/boutros/marc"
 
 var (
 	itypesSQL = `
-LOCK TABLES itemtypes WRITE;
-DELETE FROM itemtypes;
-
-INSERT INTO itemtypes
+INSERT IGNORE INTO itemtypes
   (itemtype, description, notforloan)
 VALUES
-  ("0","Ikke til utlån","1");
-  ("1","Dagslån","");
-  ("14","14 dager","");
+  ("0","Ikke til utlån","1"),
+  ("1","Dagslån",""),
+  ("14","14 dager",""),
   ("28","28 dager","");
-
-UNLOCK TABLES;`
+`
 
 	aValuesSQL = `
-LOCK TABLES authorised_values WRITE;
-DELETE FROM authorised_values WHERE category IN ("WITHDRAWN", "LOST", "NOT_LOAN", "RESTRICTED", "DAMAGED");
-
 INSERT INTO authorised_values
   (category, authorised_value, lib)
 VALUES
-  ("WITHDRAWN","1","trukket tilbake");
-  ("DAMAGED","1","skadet");
-  ("LOST","1","tapt");
-  ("LOST","2","regnes som tapt");
-  ("LOST","3","tapt og erstattet");
-  ("LOST","4","ikke på plass");
-  ("LOST","5","påstått levert");
-  ("LOST","6","påstått ikke lånt");
-  ("LOST","7","borte i transport");
-  ("LOST","8","tapt, regning betalt");
-  ("LOST","9","vidvanke, registrert forsvunnet");
-  ("LOST","10","retur eieravdeling (ved import)");
-  ("LOST","11","til henteavdeling (ved import)");
-  ("NOT_LOAN","-1","i bestilling");
-  ("NOT_LOAN","2","ny");
-  ("NOT_LOAN","3","til internt bruk");
-  ("NOT_LOAN","4","til katalogisering");
-  ("NOT_LOAN","5","vurderes kassert");
-  ("NOT_LOAN","6","til retting");
-  ("NOT_LOAN","7","til innbinding");
-  ("RESTRICTED","1","begrenset tilgang");
+  ("WITHDRAWN","1","trukket tilbake"),
+  ("DAMAGED","1","skadet"),
+  ("LOST","1","tapt"),
+  ("LOST","2","regnes som tapt"),
+  ("LOST","3","tapt og erstattet"),
+  ("LOST","4","ikke på plass"),
+  ("LOST","5","påstått levert"),
+  ("LOST","6","påstått ikke lånt"),
+  ("LOST","7","borte i transport"),
+  ("LOST","8","tapt, regning betalt"),
+  ("LOST","9","vidvanke, registrert forsvunnet"),
+  ("LOST","10","retur eieravdeling (ved import)"),
+  ("LOST","11","til henteavdeling (ved import)"),
+  ("NOT_LOAN","-1","i bestilling"),
+  ("NOT_LOAN","2","ny"),
+  ("NOT_LOAN","3","til internt bruk"),
+  ("NOT_LOAN","4","til katalogisering"),
+  ("NOT_LOAN","5","vurderes kassert"),
+  ("NOT_LOAN","6","til retting"),
+  ("NOT_LOAN","7","til innbinding"),
+  ("RESTRICTED","1","begrenset tilgang"),
   ("RESTRICTED","2","referanseverk");
-
-UNLOCK TABLES;`
+`
 
 	branchesSQLtmpl = `
-LOCK TABLES branches WRITE;
-
-INSERT INTO branches
-  (branchcode, branchname);
+INSERT IGNORE INTO branches
+  (branchcode, branchname)
 VALUES
-  {{range $code, $label := . -}}
-  ("{{$code}}","{{$label}}");
+  {{$l := len . -}}
+  {{range $i, $label := . -}}
+  ("{{.Code}}","{{.Label}}"){{if eq (plus1 $i) $l}};{{else}},{{end}}
   {{end}}
-UNLOCK TABLES;`
+`
 
 	statusCodes = map[string]marc.SubField{
 		// NOT_LOAN values: (negative value => can be reseved):

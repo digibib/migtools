@@ -455,12 +455,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	templ := template.Must(template.New("branches").Parse(branchesSQLtmpl))
+	fns := template.FuncMap{
+		"plus1": func(x int) int {
+			return x + 1
+		},
+	}
+	templ := template.Must(template.New("branches").Funcs(fns).Parse(branchesSQLtmpl))
 	branchF := mustCreate(filepath.Join(*outDir, "branches.sql"))
 	defer branchF.Close()
-	if err := templ.Execute(branchF, m.branches); err != nil {
+	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
 		log.Fatal(err)
 	}
+}
+
+type Branch struct {
+	Code, Label string
+}
+
+func branchesToSlice(branches map[string]string) []Branch {
+	res := make([]Branch, len(branches))
+	i := 0
+	for code, label := range branches {
+		res[i] = Branch{
+			Code:  code,
+			Label: label,
+		}
+		i++
+	}
+	return res
 }
 
 func mustOpen(s string) *os.File {
