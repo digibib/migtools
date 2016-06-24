@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"testing"
 
 	"github.com/boutros/marc"
@@ -21,26 +20,44 @@ func parseRecords(t *testing.T, r io.Reader, format marc.Format) []marc.Record {
 	return res
 }
 
+func remove952(r *marc.Record) {
+	for i, d := range r.DataFields {
+		if d.Tag == "952" {
+			// datafields are sorted (after Eq check), so we can easily by slicing
+			r.DataFields = r.DataFields[:i-1]
+			break
+		}
+	}
+}
+
 func TestMerge(t *testing.T) {
-	var out bytes.Buffer
-	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &out, ioutil.Discard, -1, 0)
+	var outMerged bytes.Buffer
+	var outNoItems bytes.Buffer
+	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &outMerged, &outNoItems, -1, 0)
 	if err := m.Run(); err != nil {
 		t.Fatal(err)
 	}
 
-	got := parseRecords(t, bytes.NewReader(out.Bytes()), marc.MARC)
+	got := parseRecords(t, bytes.NewReader(outMerged.Bytes()), marc.MARC)
+	gotNoItems := parseRecords(t, bytes.NewReader(outNoItems.Bytes()), marc.MARCXML)
 	want := parseRecords(t, bytes.NewBufferString(wantMARCXML), marc.MARCXML)
 
 	if len(got) != len(want) {
 		t.Fatalf("got:\n%v\nwant:%v", got, want)
 	}
+	if len(gotNoItems) != len(got) {
+		t.Fatalf("number of marcxml records %d != %d number of marc records", len(gotNoItems), len(got))
+	}
 	for i, r := range got {
 		if !r.Eq(want[i]) {
 			t.Errorf("got:\n%+v\nwant:%+v", r, want[i])
 		}
+		// verify that the full marcxml and marc records without items are equal, when the 952 fields are removed:
+		remove952(&want[i])
+		if !gotNoItems[i].Eq(want[i]) {
+			t.Errorf("got:\n%+v\nwant:%+v", gotNoItems[i], want[i])
+		}
 	}
-
-	// TODO also test that records without items are equal to merged items, minus 952 fields.
 }
 
 const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
