@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -416,10 +417,11 @@ func init() {
 
 func main() {
 	var (
-		vmarc = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
-		exemp = flag.String("exemp", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.exemp.20141020-085129.txt", "exemplar database key-val")
-		limit = flag.Int("limit", -1, "stop after n records")
-		skip  = flag.Int("skip", 0, "skip first n records")
+		vmarc  = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
+		exemp  = flag.String("exemp", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.exemp.20141020-085129.txt", "exemplar database key-val")
+		limit  = flag.Int("limit", -1, "stop after n records")
+		skip   = flag.Int("skip", 0, "skip first n records")
+		outDir = flag.String("outdir", "", "output directory (default to current working directory)")
 	)
 
 	flag.Parse()
@@ -429,10 +431,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	outMerged := mustCreate("catalogue.mrc")
+	outMerged := mustCreate(filepath.Join(*outDir, "catalogue.mrc"))
 	defer outMerged.Close()
 
-	outNoItems := mustCreate("catalogue.marcxml")
+	outNoItems := mustCreate(filepath.Join(*outDir, "catalogue.marcxml"))
 	defer outNoItems.Close()
 
 	vmarcF := mustOpen(*vmarc)
@@ -446,15 +448,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := ioutil.WriteFile("itypes.sql", []byte(itypesSQL), os.ModePerm); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(*outDir, "itypes.sql"), []byte(itypesSQL), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
-	if err := ioutil.WriteFile("avalues.sql", []byte(aValuesSQL), os.ModePerm); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(*outDir, "avalues.sql"), []byte(aValuesSQL), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
 	templ := template.Must(template.New("branches").Parse(branchesSQLtmpl))
-	branchF := mustCreate("branches.sql")
+	branchF := mustCreate(filepath.Join(*outDir, "branches.sql"))
 	defer branchF.Close()
 	if err := templ.Execute(branchF, m.branches); err != nil {
 		log.Fatal(err)
