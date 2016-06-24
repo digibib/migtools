@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io"
+	"reflect"
 	"testing"
 
 	"github.com/boutros/marc"
@@ -50,13 +51,25 @@ func TestMerge(t *testing.T) {
 	}
 	for i, r := range got {
 		if !r.Eq(want[i]) {
-			t.Errorf("got:\n%+v\nwant:%+v", r, want[i])
+			t.Fatalf("got:\n%+v\nwant:%+v", r, want[i])
 		}
 		// verify that the full marcxml and marc records without items are equal, when the 952 fields are removed:
 		remove952(&want[i])
 		if !gotNoItems[i].Eq(want[i]) {
-			t.Errorf("got:\n%+v\nwant:%+v", gotNoItems[i], want[i])
+			t.Fatalf("got:\n%+v\nwant:%+v", gotNoItems[i], want[i])
 		}
+	}
+
+	wantBranchCodes := map[string]string{
+		"fbol": "Bøler",
+		"fnyd": "Nydalen",
+		"hutl": "Hovedbiblioteket",
+		"ffur": "Furuset",
+		"fmaj": "Majorstua",
+		"xyz":  "Missing label for branch: xyz",
+	}
+	if !reflect.DeepEqual(wantBranchCodes, m.branches) {
+		t.Fatalf("got:\n%v\nwant:\n%v", wantBranchCodes, m.branches)
 	}
 }
 
@@ -87,8 +100,8 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">1</subfield>
         <subfield code="p">03010379371001</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
+        <subfield code="a">xyz</subfield>
+        <subfield code="b">xyz</subfield>
         <subfield code="c">m</subfield>
         <subfield code="l">8</subfield>
         <subfield code="o">641.3 Gra</subfield>
@@ -244,7 +257,7 @@ const sampleVMARC = `
 const sampleEXEMP = `
 ex_titnr |379371|
 ex_exnr |1|
-ex_avd |hutl|
+ex_avd |xyz|
 ex_plass |m|
 ex_hylle ||
 ex_note ||

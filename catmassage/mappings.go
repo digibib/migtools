@@ -49,6 +49,17 @@ VALUES
 
 UNLOCK TABLES;`
 
+	branchesSQLtmpl = `
+LOCK TABLES branches WRITE;
+
+INSERT INTO branches
+  (branchcode, branchname);
+VALUES
+  {{range $code, $label := . -}}
+  ("{{$code}}","{{$label}}");
+  {{end}}
+UNLOCK TABLES;`
+
 	statusCodes = map[string]marc.SubField{
 		// NOT_LOAN values: (negative value => can be reseved):
 
@@ -72,7 +83,7 @@ UNLOCK TABLES;`
 	}
 
 	// branchcode to label
-	branches = map[string]string{
+	branchCodes = map[string]string{
 		"dfb":    "Det Flerspråklige Bibliotek",
 		"dfbs":   "Det Flerspråklige Bibliotek Referanse",
 		"fbje":   "Bjerke",

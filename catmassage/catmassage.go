@@ -29,6 +29,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/boutros/marc"
 )
@@ -53,6 +54,7 @@ type Main struct {
 	outNydalen    io.Writer
 	limit         int
 	skip          int
+	branches      map[string]string
 }
 
 func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoItems io.Writer, limit int, skip int) *Main {
@@ -63,6 +65,7 @@ func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoIte
 		outNoItems: outNoItems,
 		limit:      limit,
 		skip:       skip,
+		branches:   make(map[string]string),
 	}
 }
 
@@ -198,8 +201,16 @@ func (m *Main) Run() error {
 					case "ex_avd":
 						// 952$a branchcode and
 						// 952$b holding branch (the same for now, possibly depot)
-						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: getValue(scanner.Bytes())})
-						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: getValue(scanner.Bytes())})
+						bCode := getValue(scanner.Bytes())
+						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
+						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
+
+						// Keep track of which branchcodes that are found
+						if bLabel, ok := branchCodes[bCode]; ok {
+							m.branches[bCode] = bLabel
+						} else {
+							m.branches[bCode] = "Missing label for branch: " + bCode
+						}
 					case "ex_plass":
 						// 952$c shelving location (authorized value? TODO check)
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "c", Value: getValue(scanner.Bytes())})
@@ -430,7 +441,8 @@ func main() {
 	exempF := mustOpen(*exemp)
 	defer exempF.Close()
 
-	if err := newMain(vmarcF, exempF, outMerged, outNoItems, *limit, *skip).Run(); err != nil {
+	m := newMain(vmarcF, exempF, outMerged, outNoItems, *limit, *skip)
+	if err := m.Run(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -438,6 +450,13 @@ func main() {
 		log.Fatal(err)
 	}
 	if err := ioutil.WriteFile("avalues.sql", []byte(aValuesSQL), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+
+	templ := template.Must(template.New("branches").Parse(branchesSQLtmpl))
+	branchF := mustCreate("branches.sql")
+	defer branchF.Close()
+	if err := templ.Execute(branchF, m.branches); err != nil {
 		log.Fatal(err)
 	}
 }
