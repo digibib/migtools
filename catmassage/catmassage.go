@@ -8,7 +8,7 @@
 //   catalogue.mrc:      massaged catalogue with items information in MARC field 952, to be imported with bulcmarkimport
 //   catalogue.marcxml:  massaged catalogue without item information, to be converted to RDF with migmarc2rdf
 //   loans.csv:          active loans, to be inserted into MySQL after bulkmarcimport
-//   bjorndalen.marcxml: catalogue with items belonging to "bjørndalen-læremidler"
+//   bjornholt.marcxml:  catalogue with items belonging to "bjørnholt-læremidler"
 //   nydalen.marcxml:    catalogue with items belonging to "nydalen-læremidler"
 //   branches.sql:       holding branches extracted from items, to be inserted in MySQL before bulkmarcimport
 //   itypes.sql          item types to be inserted in MySQL before bulkmarcimport
@@ -28,6 +28,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -46,27 +47,29 @@ var (
 
 // Main represents the main program execution
 type Main struct {
-	vmarc         io.Reader
-	exemp         io.ReadSeeker
-	outMerged     io.Writer
-	outNoItems    io.Writer
-	outLoans      io.Writer
-	outBjorndalen io.Writer
-	outNydalen    io.Writer
-	limit         int
-	skip          int
-	branches      map[string]string
+	vmarc        io.Reader
+	exemp        io.ReadSeeker
+	outMerged    io.Writer
+	outNoItems   io.Writer
+	outLoans     io.Writer
+	outBjornholt io.Writer
+	outNydalen   io.Writer
+	limit        int
+	skip         int
+	branches     map[string]string
 }
 
-func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoItems io.Writer, limit int, skip int) *Main {
+func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoItems io.Writer, outB io.Writer, outN io.Writer, limit int, skip int) *Main {
 	return &Main{
-		vmarc:      vmarc,
-		exemp:      exemp,
-		outMerged:  outMerged,
-		outNoItems: outNoItems,
-		limit:      limit,
-		skip:       skip,
-		branches:   make(map[string]string),
+		vmarc:        vmarc,
+		exemp:        exemp,
+		outMerged:    outMerged,
+		outNoItems:   outNoItems,
+		outBjornholt: outB,
+		outNydalen:   outN,
+		limit:        limit,
+		skip:         skip,
+		branches:     make(map[string]string),
 	}
 }
 
@@ -101,8 +104,18 @@ func (m *Main) Run() error {
 	csv := csv.NewWriter(laanF)
 	csv.Comma = '|'
 
-	// Write XML header to catalogue.marcxml
+	// Write XML header to catalogue.marcxml, as well as bjorholt and nydalen dumps
 	_, err = m.outNoItems.Write(xmlHeader)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.outBjornholt.Write(xmlHeader)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.outNydalen.Write(xmlHeader)
 	if err != nil {
 		return err
 	}
@@ -112,6 +125,8 @@ func (m *Main) Run() error {
 	dec := marc.NewDecoder(m.vmarc, marc.LineMARC)
 	encMARC := marc.NewEncoder(m.outMerged, marc.MARC)
 	encMARCXML := marc.NewEncoder(m.outNoItems, marc.MARCXML)
+	encFbjl := marc.NewEncoder(m.outBjornholt, marc.MARCXML)
+	encFnyl := marc.NewEncoder(m.outNydalen, marc.MARCXML)
 
 	skipCount := 0
 	if m.skip > 0 {
@@ -208,8 +223,8 @@ func (m *Main) Run() error {
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
 
-						// Keep track of which branchcodes that are found, ignoring dfb
-						if bCode != "dfb" {
+						// Keep track of which branchcodes that are found, ignoring dfb/fbjl/fnyl
+						if bCode != "dfb" && bCode != "fbjl" && bCode != "fnyl" {
 							if bLabel, ok := branchCodes[bCode]; ok {
 								m.branches[bCode] = bLabel
 							} else {
@@ -347,6 +362,11 @@ func (m *Main) Run() error {
 			fmt.Println(err)
 			return err
 		}
+
+		// strip items beloning to bjornholt-læremidler and nydalen-læremidler
+		fbjl, fnyl := splitItems(&r)
+
+		// encode marc record with items to be migrated to Koha
 		if err = encMARC.Encode(r); err != nil {
 			log.Println(err)
 			log.Println("bibliofil titellnummer: ", titleNumber(&r))
@@ -354,23 +374,62 @@ func (m *Main) Run() error {
 			// return err
 		}
 
+		// encode records with bjornholt-læremidler items, if any
+		if len(fbjl) > 0 {
+			remove952(&r) // remove all items
+			r.DataFields = append(r.DataFields, fbjl...)
+			if err := encFbjl.Encode(r); err != nil {
+				return err
+			}
+		}
+		// encode records with nydalen-læremidler items, if any
+		if len(fnyl) > 0 {
+			remove952(&r) // remove any items from bjornholt-læremidler
+			r.DataFields = append(r.DataFields, fnyl...)
+			if err := encFnyl.Encode(r); err != nil {
+				return err
+			}
+		}
 		c++
 		if c == m.limit {
 			break
 		}
 	}
 
+	// flush all buffered writers
 	encMARC.Flush()
 	encMARCXML.Flush()
+	encFbjl.Flush()
+	encFnyl.Flush()
 	csv.Flush()
 
-	// write XML footer
+	// write XML footers
 	_, err = m.outNoItems.Write(xmlFooter)
 	if err != nil {
 		return err
 	}
 
+	_, err = m.outBjornholt.Write(xmlFooter)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.outNydalen.Write(xmlFooter)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func remove952(r *marc.Record) {
+	sort.Sort(r.DataFields)
+	for i, d := range r.DataFields {
+		if d.Tag == "952" {
+			r.DataFields = r.DataFields[:i]
+			break
+		}
+	}
 }
 
 // titleNumber returns the Record's title number from the 001 control field,
@@ -452,13 +511,19 @@ func main() {
 	outNoItems := mustCreate(filepath.Join(*outDir, "catalogue.marcxml"))
 	defer outNoItems.Close()
 
+	outBjornholt := mustCreate(filepath.Join(*outDir, "bjornholt.marcxml"))
+	defer outBjornholt.Close()
+
+	outNydalen := mustCreate(filepath.Join(*outDir, "nydalen.marcxml"))
+	defer outNydalen.Close()
+
 	vmarcF := mustOpen(*vmarc)
 	defer vmarcF.Close()
 
 	exempF := mustOpen(*exemp)
 	defer exempF.Close()
 
-	m := newMain(vmarcF, exempF, outMerged, outNoItems, *limit, *skip)
+	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, *limit, *skip)
 	if err := m.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -481,6 +546,34 @@ func main() {
 	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// splitItems will return the items belonging to Nydalen-læremidler and Bjornholt-lærmidler,
+// represented as a set of 952 marc.DataFields. The record itself will be modified in-place
+// and stripped of the returned items.
+func splitItems(r *marc.Record) (marc.DFields, marc.DFields) {
+	var fbjl, fnyl, rest marc.DFields
+	for _, f := range r.DataFields {
+		if f.Tag == "952" {
+			match := false
+			for _, sf := range f.SubFields {
+				if sf.Code == "a" && sf.Value == "fbjl" {
+					fbjl = append(fbjl, f)
+					match = true
+				}
+				if sf.Code == "a" && sf.Value == "fnyl" {
+					fnyl = append(fnyl, f)
+					match = true
+				}
+			}
+			if !match {
+				rest = append(rest, f)
+			}
+		}
+	}
+	remove952(r)                                 // remove all items
+	r.DataFields = append(r.DataFields, rest...) // add back items, excluding fbjl/fnyl items
+	return fbjl, fnyl
 }
 
 type Branch struct {

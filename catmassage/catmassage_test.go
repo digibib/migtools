@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io"
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -21,20 +22,10 @@ func parseRecords(t *testing.T, r io.Reader, format marc.Format) []marc.Record {
 	return res
 }
 
-func remove952(r *marc.Record) {
-	for i, d := range r.DataFields {
-		if d.Tag == "952" {
-			// datafields are sorted (after Eq check), so we can easily by slicing
-			r.DataFields = r.DataFields[:i]
-			break
-		}
-	}
-}
-
 func TestMerge(t *testing.T) {
 	var outMerged bytes.Buffer
 	var outNoItems bytes.Buffer
-	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &outMerged, &outNoItems, -1, 0)
+	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &outMerged, &outNoItems, ioutil.Discard, ioutil.Discard, -1, 0)
 	if err := m.Run(); err != nil {
 		t.Fatal(err)
 	}
@@ -467,3 +458,94 @@ ex_kl_sett |0|
 ex_strek |0|
 ^
 `
+
+const recordToSplit = `
+<record>
+    <leader>     n   a22        4500</leader>
+    <controlfield tag="001">1245593</controlfield>
+    <controlfield tag="008">120228                a          00nob 2</controlfield>
+    <datafield tag="100" ind1=" " ind2="0">
+        <subfield code="a">Märtha Louise</subfield>
+        <subfield code="c">prinsesse, datter av Harald V, konge av Norge</subfield>
+        <subfield code="d">1971-</subfield>
+        <subfield code="j">n.</subfield>
+        <subfield code="1">948.1055092</subfield>
+        <subfield code="6">923.148 z, 948.1055 x</subfield>
+        <subfield code="3">16549700</subfield>
+    </datafield>
+    <datafield tag="245" ind1="1" ind2="0">
+        <subfield code="a">Englenes hemmeligheter</subfield>
+        <subfield code="b">deres natur, språk og hvordan du åpner opp for dem</subfield>
+        <subfield code="c">Prinsesse Märtha Louise, Elisabeth Nordeng</subfield>
+    </datafield>
+    <datafield tag="942" ind1=" " ind2=" ">
+        <subfield code="y">X</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">1</subfield>
+        <subfield code="p">03011245593001</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
+        <subfield code="l">23</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">2</subfield>
+        <subfield code="p">03011245593002</subfield>
+        <subfield code="a">fbjl</subfield>
+        <subfield code="b">fbjl</subfield>
+        <subfield code="l">24</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">3</subfield>
+        <subfield code="p">03011245593003</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
+        <subfield code="l">14</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">4</subfield>
+        <subfield code="p">03011245593004</subfield>
+        <subfield code="a">ffur</subfield>
+        <subfield code="b">ffur</subfield>
+        <subfield code="c">BEDRE LIV</subfield>
+        <subfield code="l">27</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">5</subfield>
+        <subfield code="p">03011245593005</subfield>
+        <subfield code="a">fnyl</subfield>
+        <subfield code="b">fnyl</subfield>
+        <subfield code="l">44</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">6</subfield>
+        <subfield code="p">03011245593006</subfield>
+        <subfield code="a">fbol</subfield>
+        <subfield code="b">fbol</subfield>
+        <subfield code="c">Livsstil</subfield>
+        <subfield code="l">28</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+    <datafield tag="952" ind1=" " ind2=" ">
+        <subfield code="t">7</subfield>
+        <subfield code="p">03011245593007</subfield>
+        <subfield code="a">fnyl</subfield>
+        <subfield code="b">fnyl</subfield>
+        <subfield code="l">6</subfield>
+        <subfield code="y">28</subfield>
+    </datafield>
+</record>`
+
+func TestSplitItems(t *testing.T) {
+	r := parseRecords(t, bytes.NewBufferString(recordToSplit), marc.MARCXML)[0]
+	fbjl, fnyl := splitItems(&r)
+
+	if len(fbjl) != 1 || len(fnyl) != 2 {
+		t.Errorf("bjønrholt/nydalen items, got %d/%d; want 1/2", len(fbjl), len(fnyl))
+	}
+}
