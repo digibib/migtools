@@ -59,6 +59,70 @@ type Main struct {
 	branches     map[string]string
 }
 
+func init() {
+	log.SetFlags(0)
+	log.SetPrefix("catmassage: ")
+}
+
+func main() {
+	var (
+		vmarc  = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
+		exemp  = flag.String("exemp", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.exemp.20141020-085129.txt", "exemplar database key-val")
+		limit  = flag.Int("limit", -1, "stop after n records")
+		skip   = flag.Int("skip", 0, "skip first n records")
+		outDir = flag.String("outdir", "", "output directory (default to current working directory)")
+	)
+
+	flag.Parse()
+
+	if *vmarc == "" || *exemp == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	outMerged := mustCreate(filepath.Join(*outDir, "catalogue.mrc"))
+	defer outMerged.Close()
+
+	outNoItems := mustCreate(filepath.Join(*outDir, "catalogue.marcxml"))
+	defer outNoItems.Close()
+
+	outBjornholt := mustCreate(filepath.Join(*outDir, "bjornholt.marcxml"))
+	defer outBjornholt.Close()
+
+	outNydalen := mustCreate(filepath.Join(*outDir, "nydalen.marcxml"))
+	defer outNydalen.Close()
+
+	vmarcF := mustOpen(*vmarc)
+	defer vmarcF.Close()
+
+	exempF := mustOpen(*exemp)
+	defer exempF.Close()
+
+	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, *limit, *skip)
+	if err := m.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(*outDir, "itypes.sql"), []byte(itypesSQL), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+	if err := ioutil.WriteFile(filepath.Join(*outDir, "avalues.sql"), []byte(aValuesSQL), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+
+	fns := template.FuncMap{
+		"plus1": func(x int) int {
+			return x + 1
+		},
+	}
+	templ := template.Must(template.New("branches").Funcs(fns).Parse(branchesSQLtmpl))
+	branchF := mustCreate(filepath.Join(*outDir, "branches.sql"))
+	defer branchF.Close()
+	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoItems io.Writer, outB io.Writer, outN io.Writer, limit int, skip int) *Main {
 	return &Main{
 		vmarc:        vmarc,
@@ -79,7 +143,7 @@ func (m *Main) Run() error {
 	// The DB is sorted by title number and copy number (ex_titnr and ex_exnr),
 	// so all copies can be read sequentially.
 
-	exemp := make(map[string]int64) // key=title, value=position
+	exemp := make(map[string]int64) // key=titlenr, value=position
 	n := 0                          // position in file
 	scanner := bufio.NewScanner(m.exemp)
 	c := 0
@@ -120,13 +184,14 @@ func (m *Main) Run() error {
 		return err
 	}
 
-	// Loop over records in database, and merge exemplar info into field 952
-
+	// Initialize encoders
 	dec := marc.NewDecoder(m.vmarc, marc.LineMARC)
 	encMARC := marc.NewEncoder(m.outMerged, marc.MARC)
 	encMARCXML := marc.NewEncoder(m.outNoItems, marc.MARCXML)
 	encFbjl := marc.NewEncoder(m.outBjornholt, marc.MARCXML)
 	encFnyl := marc.NewEncoder(m.outNydalen, marc.MARCXML)
+
+	// Loop over records in database, and merge exemplar info into field 952
 
 	skipCount := 0
 	if m.skip > 0 {
@@ -176,7 +241,7 @@ func (m *Main) Run() error {
 		}
 
 		if pos, ok := exemp[tnr]; ok {
-			// seek to first occurence of titlenumber in exemp database
+			// seek to first occurrence of titlenumber in exemp database
 			if _, err := m.exemp.Seek(pos, 0); err != nil {
 
 				return err
@@ -415,11 +480,7 @@ func (m *Main) Run() error {
 	}
 
 	_, err = m.outNydalen.Write(xmlFooter)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func remove952(r *marc.Record) {
@@ -482,70 +543,6 @@ func getValue(b []byte) string {
 		}
 	}
 	return ""
-}
-
-func init() {
-	log.SetFlags(0)
-	log.SetPrefix("catmassage: ")
-}
-
-func main() {
-	var (
-		vmarc  = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
-		exemp  = flag.String("exemp", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.exemp.20141020-085129.txt", "exemplar database key-val")
-		limit  = flag.Int("limit", -1, "stop after n records")
-		skip   = flag.Int("skip", 0, "skip first n records")
-		outDir = flag.String("outdir", "", "output directory (default to current working directory)")
-	)
-
-	flag.Parse()
-
-	if *vmarc == "" || *exemp == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	outMerged := mustCreate(filepath.Join(*outDir, "catalogue.mrc"))
-	defer outMerged.Close()
-
-	outNoItems := mustCreate(filepath.Join(*outDir, "catalogue.marcxml"))
-	defer outNoItems.Close()
-
-	outBjornholt := mustCreate(filepath.Join(*outDir, "bjornholt.marcxml"))
-	defer outBjornholt.Close()
-
-	outNydalen := mustCreate(filepath.Join(*outDir, "nydalen.marcxml"))
-	defer outNydalen.Close()
-
-	vmarcF := mustOpen(*vmarc)
-	defer vmarcF.Close()
-
-	exempF := mustOpen(*exemp)
-	defer exempF.Close()
-
-	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, *limit, *skip)
-	if err := m.Run(); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := ioutil.WriteFile(filepath.Join(*outDir, "itypes.sql"), []byte(itypesSQL), os.ModePerm); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(*outDir, "avalues.sql"), []byte(aValuesSQL), os.ModePerm); err != nil {
-		log.Fatal(err)
-	}
-
-	fns := template.FuncMap{
-		"plus1": func(x int) int {
-			return x + 1
-		},
-	}
-	templ := template.Must(template.New("branches").Funcs(fns).Parse(branchesSQLtmpl))
-	branchF := mustCreate(filepath.Join(*outDir, "branches.sql"))
-	defer branchF.Close()
-	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
-		log.Fatal(err)
-	}
 }
 
 // splitItems will return the items belonging to Nydalen-læremidler and Bjornholt-lærmidler,
