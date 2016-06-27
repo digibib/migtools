@@ -92,7 +92,7 @@ PREFIX      role: <http://data.deichman.no/role#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
-	<{{.URI}}> ?p ?o .
+	<{{.URI}}> ?p ?o ; a :Publication .
 	?item ?itempred ?itemobj .
 }
 WHERE {
