@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/knakk/rdf"
 	"github.com/knakk/sparql"
@@ -187,10 +188,11 @@ type Main struct {
 	services string
 	virtuoso *sparql.Repo
 
-	wg      sync.WaitGroup  // keep track of completed jobs
-	jobs    chan (Resource) // channel of resources to be processed
-	bnodeID uint64          // blank node ID counter
-	limit   int
+	wg       sync.WaitGroup      // keep track of completed jobs
+	jobs     chan (Resource)     // channel of resources to be processed
+	complete chan ([]rdf.Triple) // channel of complete resources to be written out
+	bnodeID  uint64              // blank node ID counter
+	limit    int
 }
 
 // Resource represent a job of migrating a RDF resource
@@ -211,6 +213,7 @@ func newMain(se, ve, dbauser, dbapass string, limit int) *Main {
 		services: se,
 		virtuoso: repo,
 		jobs:     make(chan Resource),
+		complete: make(chan []rdf.Triple),
 		limit:    limit,
 	}
 }
@@ -247,8 +250,6 @@ func (m *Main) ensureUniqueBNodeIDs(tr []rdf.Triple) {
 
 // process jobs from jobs channel
 func (m *Main) processResources() {
-
-	dec := rdf.NewTripleEncoder(os.Stdout, rdf.NTriples)
 
 getJob:
 	for job := range m.jobs {
@@ -290,7 +291,9 @@ getJob:
 			if err != nil {
 				log.Println(err)
 				log.Printf("putting job back on queue: %v", job.URI)
-				go func() { m.jobs <- job }()
+				go func() {
+					m.jobs <- job
+				}()
 				continue getJob
 			}
 			triples = append(triples, tr...)
@@ -303,11 +306,9 @@ getJob:
 		stripGyearTimeZone(job.New)
 		m.ensureUniqueBNodeIDs(job.New)
 
-		if err := dec.EncodeAll(job.New); err != nil {
-			log.Fatal(err)
-		}
+		m.wg.Add(1)
+		m.complete <- job.New
 	}
-	dec.Close()
 	m.wg.Done()
 }
 
@@ -354,9 +355,24 @@ func (m *Main) addToQueue(resource string) {
 	}
 }
 
+// Writer serializes the completed resources to stdout
+func (m *Main) Writer() {
+	enc := rdf.NewTripleEncoder(os.Stdout, rdf.NTriples)
+	defer enc.Close()
+	for tr := range m.complete {
+		if err := enc.EncodeAll(tr); err != nil {
+			log.Fatal(err)
+		}
+		m.wg.Done()
+	}
+	m.wg.Done()
+}
+
 // Run executes the migration process
 func (m *Main) Run(workers int) {
 
+	m.wg.Add(1)
+	go m.Writer()
 	m.wg.Add(workers)
 	for i := 0; i < workers; i++ {
 		go m.processResources()
@@ -369,6 +385,8 @@ func (m *Main) Run(workers int) {
 		}
 		m.wg.Done()
 		close(m.jobs)
+		time.Sleep(1 * time.Second) // TODO find better solution. To tired now :-/
+		close(m.complete)
 	}()
 
 	m.wg.Wait()
@@ -389,5 +407,4 @@ func main() {
 	m := newMain(*services, *virtuoso, "dba", "dba", *limit)
 
 	m.Run(*numWorkers)
-
 }
