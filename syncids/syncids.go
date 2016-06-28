@@ -34,7 +34,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("INSERT { ?pub :recordId %q }\n", rec[0])
+		fmt.Printf("INSERT { ?pub :recordID %q }\n", rec[0])
 		fmt.Printf("WHERE { ?pub :bibliofilPublicationID %q }; \n", trimLeadingZeroes(rec[1]))
 	}
 }
