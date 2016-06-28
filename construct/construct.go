@@ -86,14 +86,13 @@ WHERE {
 	}
 }
 
-# tag: constructPublicationWithItems
+# tag: constructPublication
 PREFIX          : <{{.Services}}/ontology#>
 PREFIX      role: <http://data.deichman.no/role#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
 	<{{.URI}}> ?p ?o ; a :Publication .
-	?item ?itempred ?itemobj .
 }
 WHERE {
 	<{{.URI}}> ?p ?o .
@@ -121,8 +120,6 @@ WHERE {
 			role:coreographer
 		}
 	}
-	OPTIONAL { <{{.URI}}> <{{.Services}}/ontology#hasItem> ?item .
-			   ?item ?itempred ?itemobj }
 }
 
 # tag: constructPublicationContributions
@@ -255,7 +252,7 @@ getJob:
 	for job := range m.jobs {
 		typeQueries := map[string][]string{
 			"publication": {
-				"constructPublicationWithItems",
+				"constructPublication",
 				"constructPublicationContributions",
 				"constructPublicationSerials",
 			},
