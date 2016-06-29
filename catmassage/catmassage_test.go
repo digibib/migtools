@@ -57,7 +57,7 @@ func TestMerge(t *testing.T) {
 		"hutl": "Hovedbiblioteket",
 		"ffur": "Furuset",
 		"fmaj": "Majorstua",
-		"xyz":  "Missing label for branch: xyz",
+		"xyz":  "MISSING LABEL FOR BRANCH \"xyz\"",
 	}
 	if !reflect.DeepEqual(wantBranchCodes, m.branches) {
 		t.Fatalf("got:\n%v\nwant:\n%v", wantBranchCodes, m.branches)
