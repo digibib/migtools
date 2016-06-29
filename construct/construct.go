@@ -201,8 +201,8 @@ type Resource struct {
 
 }
 
-func newMain(se, ve, dbauser, dbapass string, limit int) *Main {
-	repo, err := sparql.NewRepo(ve, sparql.DigestAuth(dbauser, dbapass))
+func newMain(se, ve string, limit int) *Main {
+	repo, err := sparql.NewRepo(ve)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -375,18 +375,14 @@ func (m *Main) Run(workers int) {
 		go m.processResources()
 	}
 
-	go func() {
-		m.wg.Add(1)
-		for _, r := range []string{"person", "work", "serial", "genre", "subject", "place", "publication"} {
-			m.addToQueue(r)
-		}
-		m.wg.Done()
-		close(m.jobs)
-		time.Sleep(1 * time.Second) // TODO find better solution. To tired now :-/
-		close(m.complete)
-	}()
-
+	for _, r := range []string{"person", "work", "serial", "genre", "subject", "place", "publication"} {
+		m.addToQueue(r)
+	}
+	close(m.jobs)
+	time.Sleep(3 * time.Second) // TODO find better solution. To tired now :-/
+	close(m.complete)
 	m.wg.Wait()
+
 }
 
 func init() {
@@ -394,14 +390,14 @@ func init() {
 }
 
 func main() {
-	services := flag.String("se", "http://192.168.50.12:8005", "services endpoint")
-	virtuoso := flag.String("ve", "http://192.168.50.12:8890/sparql-auth/", "virtuoso endpoint")
+	services := flag.String("se", "http://localhost:8005", "services endpoint")
+	virtuoso := flag.String("ve", "http://localhost:8890/sparql", "virtuoso endpoint")
 	numWorkers := flag.Int("n", 3, "number of workers")
 	limit := flag.Int("l", -1, "limit to n resources")
 
 	flag.Parse()
 
-	m := newMain(*services, *virtuoso, "dba", "dba", *limit)
+	m := newMain(*services, *virtuoso, *limit)
 
 	m.Run(*numWorkers)
 }
