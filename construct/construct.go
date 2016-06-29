@@ -57,14 +57,13 @@ PREFIX     : <{{.Services}}/ontology#>
 PREFIX role: <http://data.deichman.no/role#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
-	<{{.URI}}> :creator ?creator ;
-	    :contributor [
+	<{{.URI}}> :contributor [
 		:agent ?agent ;
 		:role ?role ;
 		a :Contribution, ?mainEntry ] .
 }
 WHERE {
-	SELECT DISTINCT ?agent ?role ?mainEntry ?creator WHERE {
+	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
 		?pub :publicationOf <{{.URI}}> .
 		OPTIONAL {
 			?pub ?role ?agent .
@@ -81,7 +80,6 @@ WHERE {
 		OPTIONAL {
 			?pub :mainEntry ?agent
 			BIND(:MainEntry AS ?mainEntry)
-			BIND(?agent AS ?creator)
 		}
 	}
 }
