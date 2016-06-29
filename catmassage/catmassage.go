@@ -293,7 +293,7 @@ func (m *Main) Run() error {
 							if bLabel, ok := branchCodes[bCode]; ok {
 								m.branches[bCode] = bLabel
 							} else {
-								m.branches[bCode] = fmt.Sprintf("MISSING LABEL FOR BRANCH %q", bCode)
+								m.branches[bCode] = "MISSING LABEL FOR BRANCH: " + bCode
 							}
 						}
 					case "ex_plass":
