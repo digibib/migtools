@@ -135,12 +135,7 @@ WHERE {
 	<{{.URI}}> a :Publication ;
 			   ?role ?agent .
 	VALUES ?role {
-		role:scriptWriter
-		role:actor
 		role:photographer
-		role:lyricist
-		role:composer
-		role:director
 		role:performer
 		role:musicalArranger
 		role:reader
@@ -148,7 +143,6 @@ WHERE {
 		role:author
 		role:translator
 		role:illustrator
-		role:editor
 		role:contributor
 		role:coreographer
 		}
