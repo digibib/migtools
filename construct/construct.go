@@ -377,7 +377,7 @@ func (m *Main) Run(workers int) {
 		m.addToQueue(r)
 	}
 	close(m.jobs)
-	time.Sleep(3 * time.Second) // TODO find better solution. To tired now :-/
+	time.Sleep(10 * time.Second) // TODO find better solution. To tired now :-/
 	close(m.complete)
 	m.wg.Wait()
 
