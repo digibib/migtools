@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -389,7 +391,17 @@ func main() {
 
 	flag.Parse()
 
-	m := newMain(*services, *virtuoso, *limit)
+	vURL, err := url.Parse(*virtuoso)
+	if err != nil {
+		log.Fatal(err)
+	}
+	host, port, _ := net.SplitHostPort(vURL.Host)
+	virtuosoIP, err := net.ResolveIPAddr("ip4", host)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m := newMain(*services, fmt.Sprintf("http://%s:%s/%s", virtuosoIP.String(), port, vURL.Path), *limit)
 
 	m.Run(*numWorkers)
 }
