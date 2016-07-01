@@ -43,6 +43,6 @@ func main() {
 		url := fmt.Sprintf("http://static.deichman.no/bilder/%s/%s/1_thumb.jpg", rec[0], rec[1])
 		fmt.Println("DELETE { ?pub :hasImage ?url }")
 		fmt.Printf("INSERT { ?pub :hasImage %q . }\n", url)
-		fmt.Printf("WHERE { ?pub :bibliofilPublicationID %q OPTIONAL { ?pub :hasImage ?url } }\n;\n", rec[0])
+		fmt.Printf("WHERE { ?pub :recordID %q OPTIONAL { ?pub :hasImage ?url } }\n;\n", rec[0])
 	}
 }
