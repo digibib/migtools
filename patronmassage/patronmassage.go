@@ -45,90 +45,90 @@ func newMain(laaner, lmarc, lnel io.Reader, nw int) Main {
 	}
 }
 
-func (m Main) Run() error {
+func (m Main) indexLmarc(wg *sync.WaitGroup) {
+	dec := marc.NewDecoder(m.lmarcIn, marc.LineMARC)
+	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
+		if err != nil {
+			log.Fatal(err)
+			// TODO continue?
+		}
+		n, err := borrowernumber(&rec)
+		if err != nil {
+			log.Println(err)
+			rec.DumpTo(os.Stderr, true)
+			continue
+		}
+		m.lmarc[n] = rec
+	}
+	wg.Done()
+	log.Println("done indexing lmarc")
+}
+
+func (m Main) indexLaaner(wg *sync.WaitGroup) {
+	dec := NewKVDecoder(m.laanerIn)
+	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
+		if err != nil {
+			log.Fatal(err)
+			// TODO continue?
+		}
+		if rec["ln_nr"] == "" {
+			continue
+		}
+		n, err := strconv.Atoi(rec["ln_nr"])
+		if err != nil {
+			log.Fatal(err)
+		}
+		m.laaner[n] = rec
+	}
+	log.Println("done indexing laaner")
+	wg.Done()
+}
+
+func (m Main) indexLnel(wg *sync.WaitGroup) {
+	dec := NewKVDecoder(m.lnelIn)
+	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
+		if err != nil {
+			log.Fatal(err)
+			// TODO continue?
+		}
+		if rec["lnel_nr"] == "" {
+			continue
+		}
+		n, err := strconv.Atoi(rec["lnel_nr"])
+		if err != nil {
+			log.Fatal(err)
+		}
+		m.lnel[n] = rec
+	}
+	log.Println("done indexing lnel")
+	wg.Done()
+}
+
+func (m Main) Run() {
 	log.Println("start indexing resources")
 
 	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		dec := marc.NewDecoder(m.lmarcIn, marc.LineMARC)
-		for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
-			if err != nil {
-				log.Fatal(err)
-				// TODO continue?
-			}
-			n, err := borrowernumber(&rec)
-			if err != nil {
-				log.Println(err)
-				rec.DumpTo(os.Stderr, true)
-				continue
-			}
-			m.lmarc[n] = rec
-		}
-		log.Println("done indexing lmarc")
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		dec := NewKVDecoder(m.laanerIn)
-		for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
-			if err != nil {
-				log.Fatal(err)
-				// TODO continue?
-			}
-			if rec["ln_nr"] == "" {
-				continue
-			}
-			n, err := strconv.Atoi(rec["ln_nr"])
-			if err != nil {
-				log.Fatal(err)
-			}
-			m.laaner[n] = rec
-		}
-		log.Println("done indexing laaner")
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		dec := NewKVDecoder(m.lnelIn)
-		for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
-			if err != nil {
-				log.Fatal(err)
-				// TODO continue?
-			}
-			if rec["ln_lnr"] == "" {
-				continue
-			}
-			n, err := strconv.Atoi(rec["lnel_nr"])
-			if err != nil {
-				log.Fatal(err)
-			}
-			m.lnel[n] = rec
-		}
-		log.Println("done indexing lnel")
-		wg.Done()
-	}()
-
+	wg.Add(3)
+	go m.indexLmarc(&wg)
+	go m.indexLaaner(&wg)
+	go m.indexLnel(&wg)
 	wg.Wait()
+
 	log.Println("done indexing resources")
 
 	jobs := make(chan int)
 	patrons := make(chan patron)
-	wg.Add(1)
+	patronsF := mustCreate("patrons.csv")
+	defer patronsF.Close()
+	enc := csv.NewWriter(patronsF)
+	defer enc.Flush()
 	go func() {
-		patronsF := mustCreate("patrons.csv")
-		defer patronsF.Close()
-		enc := csv.NewWriter(patronsF)
 		for p := range patrons {
 			if err := enc.Write(patronCSVRow(p)); err != nil {
 				log.Fatal(err)
 			}
+			wg.Done()
 		}
-		enc.Flush()
-		wg.Done()
 	}()
 	wg.Add(m.numWorkers)
 	for i := 0; i < m.numWorkers; i++ {
@@ -137,19 +137,19 @@ func (m Main) Run() error {
 				p := merge(m.lmarc[lnr], m.laaner[lnr], m.lnel[lnr])
 				if !strings.HasPrefix(p.surname, "!!") {
 					// deleted patrons are prefixed with !!
+					wg.Add(1)
 					patrons <- p
 				}
 			}
 			wg.Done()
 		}()
 	}
-	for lnr, _ := range m.lmarc {
+	for lnr, _ := range m.laaner {
 		jobs <- lnr
 	}
 	close(jobs)
-	close(patrons)
 	wg.Wait()
-	return nil
+	close(patrons)
 }
 
 func main() {
@@ -171,10 +171,7 @@ func main() {
 	lnelF := mustOpen(*lnel)
 	defer lnelF.Close()
 
-	m := newMain(laanerF, lmarcF, lnelF, *numWorkers)
-	if err := m.Run(); err != nil {
-		log.Fatal(err)
-	}
+	newMain(laanerF, lmarcF, lnelF, *numWorkers).Run()
 }
 
 func mustOpen(s string) *os.File {
@@ -204,14 +201,14 @@ func borrowernumber(r *marc.Record) (int, error) {
 
 func patronCSVRow(p patron) []string {
 	row := make([]string, 10)
-	row[0] = p.cardnumber
-	row[1] = p.surname
-	row[2] = p.firstname
-	row[3] = p.address
-	row[4] = p.zipcode
-	row[5] = p.city
-	row[6] = p.country
-	row[7] = p.phone
+	row[0] = p.userid
+	row[1] = p.cardnumber
+	row[2] = p.surname
+	row[3] = p.firstname
+	row[4] = p.address
+	row[5] = p.zipcode
+	row[6] = p.city
+	row[7] = p.country
 	row[8] = p.mobile
 	row[9] = p.email
 	return row
