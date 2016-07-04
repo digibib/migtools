@@ -19,12 +19,15 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/boutros/marc"
 )
+
+var outDir *string
 
 type Main struct {
 	laanerIn, lmarcIn, lnelIn io.Reader
@@ -118,7 +121,7 @@ func (m Main) Run() {
 
 	jobs := make(chan int)
 	patrons := make(chan patron)
-	patronsF := mustCreate("patrons.csv")
+	patronsF := mustCreate(filepath.Join(*outDir, "patrons.csv"))
 	defer patronsF.Close()
 	enc := csv.NewWriter(patronsF)
 	defer enc.Flush()
@@ -157,6 +160,8 @@ func main() {
 	lmarc := flag.String("lmarc", "", "lmarc dump")
 	lnel := flag.String("lnel", "", "lnel dump")
 	numWorkers := flag.Int("n", 8, "number of concurrent workers")
+	outDir = flag.String("outdir", "", "output directory (default to current working directory)")
+
 	flag.Parse()
 
 	if *laaner == "" || *lmarc == "" || *lnel == "" {
