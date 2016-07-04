@@ -103,8 +103,12 @@ type patron struct {
 // match in zipcode, the whole input string will be returned as the second return value.
 func splitZipCity(s string) (string, string) {
 	i := 0
-	for ; i <= 4; i++ {
+	for ; i < len(s); i++ {
 		if !('0' <= s[i] && s[i] <= '9') {
+			break
+		}
+		if i == 4 {
+			// zip code is max 4 digits
 			break
 		}
 	}

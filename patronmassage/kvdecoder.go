@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"unicode/utf8"
 )
@@ -14,7 +13,7 @@ const eof = rune(-1)
 
 type KVDecoder struct {
 	r     *bufio.Reader
-	line  []byte // currently line beeing scanned
+	line  []byte // line beeing scanned
 	start int    // pos of current token
 	pos   int    // byte position in line
 }
@@ -90,12 +89,6 @@ again:
 		goto again
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(string(d.line))
-			panic(r)
-		}
-	}()
 	return string(d.line[d.start : d.pos-1]), nil
 }
 

@@ -13,12 +13,14 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
 	"flag"
 	"io"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/boutros/marc"
@@ -31,14 +33,15 @@ type Main struct {
 	numWorkers                int
 }
 
-func newMain(laaner, lmarc, lnel io.Reader) Main {
+func newMain(laaner, lmarc, lnel io.Reader, nw int) Main {
 	return Main{
-		laanerIn: laaner,
-		lmarcIn:  lmarc,
-		lnelIn:   lnel,
-		laaner:   make(map[int]map[string]string),
-		lnel:     make(map[int]map[string]string),
-		lmarc:    make(map[int]marc.Record),
+		laanerIn:   laaner,
+		lmarcIn:    lmarc,
+		lnelIn:     lnel,
+		laaner:     make(map[int]map[string]string),
+		lnel:       make(map[int]map[string]string),
+		lmarc:      make(map[int]marc.Record),
+		numWorkers: nw,
 	}
 }
 
@@ -75,10 +78,10 @@ func (m Main) Run() error {
 				log.Fatal(err)
 				// TODO continue?
 			}
-			if rec["ln_lnr"] == "" {
+			if rec["ln_nr"] == "" {
 				continue
 			}
-			n, err := strconv.Atoi(rec["ln_lnr"])
+			n, err := strconv.Atoi(rec["ln_nr"])
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -111,6 +114,41 @@ func (m Main) Run() error {
 
 	wg.Wait()
 	log.Println("done indexing resources")
+
+	jobs := make(chan int)
+	patrons := make(chan patron)
+	wg.Add(1)
+	go func() {
+		patronsF := mustCreate("patrons.csv")
+		defer patronsF.Close()
+		enc := csv.NewWriter(patronsF)
+		for p := range patrons {
+			if err := enc.Write(patronCSVRow(p)); err != nil {
+				log.Fatal(err)
+			}
+		}
+		enc.Flush()
+		wg.Done()
+	}()
+	wg.Add(m.numWorkers)
+	for i := 0; i < m.numWorkers; i++ {
+		go func() {
+			for lnr := range jobs {
+				p := merge(m.lmarc[lnr], m.laaner[lnr], m.lnel[lnr])
+				if !strings.HasPrefix(p.surname, "!!") {
+					// deleted patrons are prefixed with !!
+					patrons <- p
+				}
+			}
+			wg.Done()
+		}()
+	}
+	for lnr, _ := range m.lmarc {
+		jobs <- lnr
+	}
+	close(jobs)
+	close(patrons)
+	wg.Wait()
 	return nil
 }
 
@@ -118,6 +156,7 @@ func main() {
 	laaner := flag.String("laaner", "", "laaner dump")
 	lmarc := flag.String("lmarc", "", "lmarc dump")
 	lnel := flag.String("lnel", "", "lnel dump")
+	numWorkers := flag.Int("n", 8, "number of concurrent workers")
 	flag.Parse()
 
 	if *laaner == "" || *lmarc == "" || *lnel == "" {
@@ -132,7 +171,7 @@ func main() {
 	lnelF := mustOpen(*lnel)
 	defer lnelF.Close()
 
-	m := newMain(laanerF, lmarcF, lnelF)
+	m := newMain(laanerF, lmarcF, lnelF, *numWorkers)
 	if err := m.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -161,6 +200,21 @@ func borrowernumber(r *marc.Record) (int, error) {
 		}
 	}
 	return 0, errors.New("no borrowernumber in lmarc record")
+}
+
+func patronCSVRow(p patron) []string {
+	row := make([]string, 10)
+	row[0] = p.cardnumber
+	row[1] = p.surname
+	row[2] = p.firstname
+	row[3] = p.address
+	row[4] = p.zipcode
+	row[5] = p.city
+	row[6] = p.country
+	row[7] = p.phone
+	row[8] = p.mobile
+	row[9] = p.email
+	return row
 }
 
 func init() {
