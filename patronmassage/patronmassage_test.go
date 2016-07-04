@@ -102,18 +102,19 @@ func TestPatronMerge(t *testing.T) {
 	lnelRec := mustParseKeyVal(lnelDump)
 
 	got := merge(lmarcRec, laanerRec, lnelRec)
-	got.password = "" // bcrypt has is different each time, so don't use in comparing
+	got.password = "" // bcrypt hash is different each time, so don't use in comparing
 	if got != want {
 		t.Errorf("got:\n%+v; want:\n%+v", got, want)
 	}
 }
 
 func mustParseKeyVal(s string) map[string]string {
-	r, err := parseKeyValRecord(bytes.NewBufferString(s))
+	dec := NewKVDecoder(bytes.NewBufferString(s))
+	rec, err := dec.Decode()
 	if err != nil {
 		panic(err)
 	}
-	return r
+	return rec
 }
 
 func mustParseLmarc(s string) marc.Record {

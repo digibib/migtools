@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"strings"
 	"time"
@@ -99,49 +97,6 @@ type patron struct {
 	TEMP_res_transport     string
 	TEMP_pur_transport     string
 	TEMP_fvarsel_transport string
-}
-
-func parseKeyValRecord(in io.Reader) (map[string]string, error) {
-	m := make(map[string]string, 24)
-	r := bufio.NewReader(in)
-	for {
-		k, err := r.ReadString('|')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-		v, err := r.ReadString('|')
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-
-		// We have to check if we actually have reached the end of line,
-		// because sometimes there are pipe-characters inside the value string.
-		endChar, err := r.Peek(1)
-		if err == nil {
-			if string(endChar) != "\n" {
-				vRest, err := r.ReadString('|')
-				if err != nil {
-					if err == io.EOF {
-						break
-					}
-					return nil, err
-				}
-				v = v[:len(v)-1] + vRest
-			}
-		}
-
-		// Cut at pipe-characters, and trim leading and trailing spaces and
-		// any newlines inside string.
-		m[strings.TrimSpace(k[0:len(k)-1])] = strings.Replace(
-			strings.TrimSpace(v[0:len(v)-1]), "\n", "", 1)
-	}
-	return m, nil
 }
 
 // splitZipCity splits string into zip code and city. If there is no

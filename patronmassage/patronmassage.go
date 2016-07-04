@@ -69,14 +69,42 @@ func (m Main) Run() error {
 
 	wg.Add(1)
 	go func() {
-		// TODO
+		dec := NewKVDecoder(m.laanerIn)
+		for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
+			if err != nil {
+				log.Fatal(err)
+				// TODO continue?
+			}
+			if rec["ln_lnr"] == "" {
+				continue
+			}
+			n, err := strconv.Atoi(rec["ln_lnr"])
+			if err != nil {
+				log.Fatal(err)
+			}
+			m.laaner[n] = rec
+		}
 		log.Println("done indexing laaner")
 		wg.Done()
 	}()
 
 	wg.Add(1)
 	go func() {
-		// TODO
+		dec := NewKVDecoder(m.lnelIn)
+		for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
+			if err != nil {
+				log.Fatal(err)
+				// TODO continue?
+			}
+			if rec["ln_lnr"] == "" {
+				continue
+			}
+			n, err := strconv.Atoi(rec["lnel_nr"])
+			if err != nil {
+				log.Fatal(err)
+			}
+			m.lnel[n] = rec
+		}
 		log.Println("done indexing lnel")
 		wg.Done()
 	}()
