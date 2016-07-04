@@ -13,7 +13,7 @@ const (
 ln_navn |Testesen, Test|
 ln_adr1 |Testgata 12|
 ln_adr2 ||
-ln_post |0475|
+ln_post |0475 OSLO|
 ln_land |no|
 ln_sprog ||
 ln_tlf ||
@@ -75,15 +75,26 @@ lnel_pin |9999|
 
 func TestPatronMerge(t *testing.T) {
 	want := patron{
-		cardnumber: "N001600007",
-		surname:    "Testesen",
-		firstname:  "Test",
-		address:    "",
-		address2:   "",
-		city:       "",
-		zipcode:    "",
-		email:      "",
-		phone:      "",
+		cardnumber:             "N001600007",
+		surname:                "Testesen",
+		firstname:              "Test",
+		address:                "Testgata 12",
+		city:                   "OSLO",
+		zipcode:                "0475",
+		country:                "no",
+		email:                  "testtestesen@gmail.com",
+		phone:                  "",
+		userid:                 "808708",
+		dateenrolled:           "2002-01-11",
+		dateofbirth:            "1911-03-02",
+		dateexpiry:             "2099-01-01",
+		branchcode:             "hutl",
+		TEMP_personnr:          "02031145555",
+		TEMP_nl:                true,
+		TEMP_res_transport:     "epost",
+		TEMP_pur_transport:     "epost",
+		TEMP_fvarsel_transport: "epost",
+		TEMP_sistelaan:         "2016-06-08",
 	}
 
 	lmarcRec := mustParseLmarc(lmarcDump)
@@ -91,8 +102,9 @@ func TestPatronMerge(t *testing.T) {
 	lnelRec := mustParseKeyVal(lnelDump)
 
 	got := merge(lmarcRec, laanerRec, lnelRec)
+	got.password = "" // bcrypt has is different each time, so don't use in comparing
 	if got != want {
-		t.Errorf("got:\n%v; want:\n%v", got, want)
+		t.Errorf("got:\n%+v; want:\n%+v", got, want)
 	}
 }
 
