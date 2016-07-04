@@ -209,7 +209,7 @@ func patronCSVRow(p patron) []string {
 	row[5] = p.zipcode
 	row[6] = p.city
 	row[7] = p.country
-	row[8] = p.mobile
+	row[8] = p.smsalertnumber
 	row[9] = p.email
 	return row
 }

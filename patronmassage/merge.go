@@ -26,6 +26,8 @@ type patron struct {
 		streettype                  string    // `streettype` varchar(50) DEFAULT NULL,
 		state                       string    // `state` text
 		fax                         string    // `fax` mediumtext
+		emailpro                    string    // `emailpro` text
+		phonepro                    string    // `phonepro` text
 		B_streetnumber              string    // `B_streetnumber` varchar(10) DEFAULT NULL,
 		B_streettype                string    // `B_streettype` varchar(50) DEFAULT NULL,
 		B_address                   string    // `B_address` varchar(100) DEFAULT NULL,
@@ -47,46 +49,44 @@ type patron struct {
 		altcontactphone             string    // `altcontactphone` varchar(50) DEFAULT NULL,
 		debarred                    time.Time // `debarred` date DEFAULT NULL,
 		debarredcomment             string    // `debarredcomment` varchar(255) DEFAULT NULL,
-		relationship                string // `relationship` varchar(100) DEFAULT NULL,
+		relationship                string    // `relationship` varchar(100) DEFAULT NULL,
 		contactname                 string    // `contactname` mediumtext
 		contactfirstname            string    // `contactfirstname` text
 		contacttitle                string    // `contacttitle` text
 		guarantorid                 int       // `guarantorid` int(11) DEFAULT NULL,
-		sms_provider                int    // `sms_provider_id` int(11) DEFAULT NULL,
-		opacnote                    string // `opacnote` mediumtext
+		sms_provider                int       // `sms_provider_id` int(11) DEFAULT NULL,
+		opacnote                    string    // `opacnote` mediumtext
 		updated_on                  time.Time // `updated_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		contactnote                 string    // `contactnote` varchar(255) DEFAULT NULL,
+		sort1                       string    // `sort1` varchar(80) DEFAULT NULL,
+		sort2                       string    // `sort2` varchar(80) DEFAULT NULL,
+		mobile                      string    // `mobile` varchar(50) DEFAULT NULL,
+		flags                       int       // `flags` int(11) DEFAULT NULL,
+		privacy_guarantor_checkouts int       // `privacy_guarantor_checkouts` tinyint(1) NOT NULL DEFAULT '0',
+		address2                    string    // `address2` text
 	*/
-	cardnumber                  string // `cardnumber` varchar(16) DEFAULT NULL,
-	surname                     string // `surname` mediumtext NOT NULL,
-	firstname                   string // `firstname` text
-	address                     string // `address` mediumtext NOT NULL,
-	address2                    string // `address2` text
-	city                        string // `city` mediumtext NOT NULL,
-	zipcode                     string // `zipcode` varchar(25) DEFAULT NULL,
-	country                     string // `country` text
-	email                       string // `email` mediumtext
-	phone                       string // `phone` text
-	mobile                      string // `mobile` varchar(50) DEFAULT NULL,
-	emailpro                    string // `emailpro` text
-	phonepro                    string // `phonepro` text
-	dateofbirth                 string // `dateofbirth` date DEFAULT NULL,
-	branchcode                  string // `branchcode` varchar(10) NOT NULL DEFAULT '',
-	categorycode                string // `categorycode` varchar(10) NOT NULL DEFAULT '',
-	dateenrolled                string // `dateenrolled` date DEFAULT NULL,
-	dateexpiry                  string // `dateexpiry` date DEFAULT NULL,
-	gonenoaddress               bool   // `gonenoaddress` tinyint(1) DEFAULT NULL,
-	lost                        bool   // `lost` tinyint(1) DEFAULT NULL,
-	borrowernotes               string // `borrowernotes` mediumtext
-	sex                         string // `sex` varchar(1) DEFAULT NULL,
-	password                    string // `password` varchar(60) DEFAULT NULL,
-	flags                       int    // `flags` int(11) DEFAULT NULL,
-	userid                      string // `userid` varchar(75) DEFAULT NULL,
-	contactnote                 string // `contactnote` varchar(255) DEFAULT NULL,
-	sort1                       string // `sort1` varchar(80) DEFAULT NULL,
-	sort2                       string // `sort2` varchar(80) DEFAULT NULL,
-	smsalertnumber              string // `smsalertnumber` varchar(50) DEFAULT NULL,
-	privacy                     int    // `privacy` int(11) NOT NULL DEFAULT '1',
-	privacy_guarantor_checkouts int    // `privacy_guarantor_checkouts` tinyint(1) NOT NULL DEFAULT '0',
+	cardnumber     string // `cardnumber` varchar(16) DEFAULT NULL,
+	userid         string // `userid` varchar(75) DEFAULT NULL,
+	surname        string // `surname` mediumtext NOT NULL,
+	firstname      string // `firstname` text
+	address        string // `address` mediumtext NOT NULL,
+	city           string // `city` mediumtext NOT NULL,
+	zipcode        string // `zipcode` varchar(25) DEFAULT NULL,
+	country        string // `country` text
+	email          string // `email` mediumtext
+	phone          string // `phone` text
+	smsalertnumber string // `smsalertnumber` varchar(50) DEFAULT NULL,
+	dateofbirth    string // `dateofbirth` date DEFAULT NULL,
+	branchcode     string // `branchcode` varchar(10) NOT NULL DEFAULT '',
+	categorycode   string // `categorycode` varchar(10) NOT NULL DEFAULT '',
+	dateenrolled   string // `dateenrolled` date DEFAULT NULL,
+	dateexpiry     string // `dateexpiry` date DEFAULT NULL,
+	gonenoaddress  bool   // `gonenoaddress` tinyint(1) DEFAULT NULL,
+	lost           bool   // `lost` tinyint(1) DEFAULT NULL,
+	borrowernotes  string // `borrowernotes` mediumtext
+	sex            string // `sex` varchar(1) DEFAULT NULL,
+	password       string // `password` varchar(60) DEFAULT NULL,
+	privacy        int    // `privacy` int(11) NOT NULL DEFAULT '1',
 
 	// Temporary variables that have no matching column in the borrowers table,
 	// but we need the information for further processing or populating borrower-connected tables.
