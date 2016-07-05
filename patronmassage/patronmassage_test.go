@@ -89,6 +89,7 @@ func TestPatronMerge(t *testing.T) {
 		dateofbirth:            "1911-03-02",
 		dateexpiry:             "2099-01-01",
 		branchcode:             "hutl",
+		categorycode:           "v", // mapped to "V" in Main.Run()
 		TEMP_personnr:          "02031145555",
 		TEMP_nl:                true,
 		TEMP_res_transport:     "epost",

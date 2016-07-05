@@ -138,6 +138,14 @@ func (m *Main) Run() {
 				m.branches[p.branchcode] = "MISSING LABEL FOR BRANCH: " + p.branchcode
 			}
 
+			catCode, ok := categoryCodes[p.categorycode]
+			if ok {
+				p.categorycode = catCode
+			} else {
+				log.Printf("missing mapping for patron category: %q; fallback to \"V\"", p.categorycode)
+				p.categorycode = "V"
+			}
+
 			if err := enc.Write(patronCSVRow(p)); err != nil {
 				log.Fatal(err)
 			}

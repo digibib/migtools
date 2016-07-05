@@ -156,6 +156,7 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 	p.zipcode, p.city = splitZipCity(laaner["ln_post"])
 	p.country = laaner["ln_land"]
 	p.phone = laaner["ln_tlf"]
+	p.categorycode = laaner["ln_kat"]
 
 	switch laaner["ln_kojenn"] {
 	case "k":
