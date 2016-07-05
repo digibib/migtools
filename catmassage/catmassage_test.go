@@ -25,7 +25,7 @@ func parseRecords(t *testing.T, r io.Reader, format marc.Format) []marc.Record {
 func TestMerge(t *testing.T) {
 	var outMerged bytes.Buffer
 	var outNoItems bytes.Buffer
-	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &outMerged, &outNoItems, ioutil.Discard, ioutil.Discard, -1, 0)
+	m := newMain(bytes.NewBufferString(sampleVMARC), bytes.NewReader([]byte(sampleEXEMP)), &outMerged, &outNoItems, ioutil.Discard, ioutil.Discard, ioutil.Discard, -1, 0)
 	if err := m.Run(); err != nil {
 		t.Fatal(err)
 	}

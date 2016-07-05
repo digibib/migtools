@@ -40,6 +40,15 @@ VALUES
   ("RESTRICTED","1","begrenset tilgang"),
   ("RESTRICTED","2","referanseverk");
 `
+	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber)
+SELECT borrowers.borrowernumber,
+       {{.NumRes}},
+       CONCAT('{{.DueDate}}', ' 23:59:00'),
+       items.itemnumber
+FROM borrowers
+INNER JOIN items ON items.barcode = '{{.Barcode}}'
+WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
+`
 
 	branchesSQLtmpl = `
 INSERT IGNORE INTO branches

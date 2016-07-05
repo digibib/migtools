@@ -7,7 +7,7 @@
 // output:
 //   catalogue.mrc:      massaged catalogue with items information in MARC field 952, to be imported with bulcmarkimport
 //   catalogue.marcxml:  massaged catalogue without item information, to be converted to RDF with migmarc2rdf
-//   loans.csv:          active loans, to be inserted into MySQL after bulkmarcimport
+//   issues.sql:         active loans, to be inserted into MySQL after bulkmarcimport and patron-import
 //   bjornholt.marcxml:  catalogue with items belonging to "bjørnholt-læremidler"
 //   nydalen.marcxml:    catalogue with items belonging to "nydalen-læremidler"
 //   branches.sql:       holding branches extracted from items, to be inserted in MySQL before bulkmarcimport
@@ -19,7 +19,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
@@ -43,6 +42,7 @@ var (
 	prefixTitnr = []byte("ex_titnr |")
 
 	rgx14days = regexp.MustCompile(`(?i)DG|ED|EE|EF|EG`)
+	issueTmpl = template.Must(template.New("issue").Parse(issuesSQLtmp))
 )
 
 // Main represents the main program execution
@@ -51,12 +51,19 @@ type Main struct {
 	exemp        io.ReadSeeker
 	outMerged    io.Writer
 	outNoItems   io.Writer
-	outLoans     io.Writer
+	outIssues    io.Writer
 	outBjornholt io.Writer
 	outNydalen   io.Writer
 	limit        int
 	skip         int
 	branches     map[string]string
+}
+
+type Issue struct {
+	NumRes              int
+	DueDate             string
+	Barcode             string
+	BibliofilBorrowerNr string
 }
 
 func init() {
@@ -92,13 +99,16 @@ func main() {
 	outNydalen := mustCreate(filepath.Join(*outDir, "nydalen.marcxml"))
 	defer outNydalen.Close()
 
+	outIssues := mustCreate(filepath.Join(*outDir, "issues.sql"))
+	defer outIssues.Close()
+
 	vmarcF := mustOpen(*vmarc)
 	defer vmarcF.Close()
 
 	exempF := mustOpen(*exemp)
 	defer exempF.Close()
 
-	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, *limit, *skip)
+	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, outIssues, *limit, *skip)
 	if err := m.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -123,7 +133,7 @@ func main() {
 	}
 }
 
-func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoItems io.Writer, outB io.Writer, outN io.Writer, limit int, skip int) *Main {
+func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged, outNoItems, outB, outN, outIssues io.Writer, limit int, skip int) *Main {
 	return &Main{
 		vmarc:        vmarc,
 		exemp:        exemp,
@@ -131,6 +141,7 @@ func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged io.Writer, outNoIte
 		outNoItems:   outNoItems,
 		outBjornholt: outB,
 		outNydalen:   outN,
+		outIssues:    outIssues,
 		limit:        limit,
 		skip:         skip,
 		branches:     make(map[string]string),
@@ -160,16 +171,10 @@ func (m *Main) Run() error {
 		n += len(scanner.Bytes()) + 1 // incl newline
 	}
 
-	laanF, err := os.Create("laan.csv")
-	if err != nil {
-		return err
-	}
-	defer laanF.Close()
-	csv := csv.NewWriter(laanF)
-	csv.Comma = '|'
+	issueWriter := bufio.NewWriter(m.outIssues)
 
 	// Write XML header to catalogue.marcxml, as well as bjorholt and nydalen dumps
-	_, err = m.outNoItems.Write(xmlHeader)
+	_, err := m.outNoItems.Write(xmlHeader)
 	if err != nil {
 		return err
 	}
@@ -249,7 +254,7 @@ func (m *Main) Run() error {
 
 			scanner := bufio.NewScanner(m.exemp)
 			f := marc.DField{Tag: "952"}
-			var loanRow []string
+			var issue Issue
 			onLoan := false
 
 			// parse exemplar information
@@ -266,8 +271,7 @@ func (m *Main) Run() error {
 						if getValue(scanner.Bytes()) != tnr {
 							break findExemplars
 						}
-						loanRow = make([]string, 6)
-						loanRow[0] = tnr
+						issue = Issue{}
 					case "ex_exnr":
 						// 952$t copy number
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "t", Value: getValue(scanner.Bytes())})
@@ -279,8 +283,7 @@ func (m *Main) Run() error {
 						}
 						barcode := fmt.Sprintf("0301%07d%03d", tnrInt, c)
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "p", Value: barcode})
-						loanRow[1] = getValue(scanner.Bytes())
-						loanRow[5] = barcode
+						issue.Barcode = barcode
 					case "ex_avd":
 						// 952$a branchcode and
 						// 952$b holding branch (the same for now, possibly depot)
@@ -332,7 +335,7 @@ func (m *Main) Run() error {
 								Code:  "m",
 								Value: strconv.FormatInt(int64(v[0]-48), 10),
 							})
-							loanRow[2] = v
+							issue.NumRes = int(v[0] - 48)
 						}
 					case "ex_utlkode":
 						if v := getValue(scanner.Bytes()); v == "e" || v == "r" {
@@ -341,7 +344,7 @@ func (m *Main) Run() error {
 							f.SubFields = append(f.SubFields, marc.SubField{Code: "5", Value: "2"})
 						}
 					case "ex_laanr":
-						loanRow[3] = strings.TrimPrefix(getValue(scanner.Bytes()), "-")
+						issue.BibliofilBorrowerNr = strings.TrimPrefix(getValue(scanner.Bytes()), "-")
 					case "ex_laantid":
 					case "ex_forfall":
 						//952$q due date (if checked out)
@@ -355,7 +358,7 @@ func (m *Main) Run() error {
 								Code:  "q",
 								Value: forfall,
 							})
-							loanRow[4] = forfall
+							issue.DueDate = forfall
 						}
 					case "ex_purrdat":
 					case "ex_antpurr":
@@ -413,8 +416,7 @@ func (m *Main) Run() error {
 
 					if onLoan {
 						// write CSV row to loan.csv
-						err := csv.Write(loanRow)
-						if err != nil {
+						if err := issueTmpl.Execute(issueWriter, issue); err != nil {
 							return err
 						}
 						onLoan = false
@@ -466,7 +468,7 @@ func (m *Main) Run() error {
 	encMARCXML.Flush()
 	encFbjl.Flush()
 	encFnyl.Flush()
-	csv.Flush()
+	issueWriter.Flush()
 
 	// write XML footers
 	_, err = m.outNoItems.Write(xmlFooter)
