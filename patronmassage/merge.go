@@ -130,6 +130,7 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 	p := patron{
 		privacy:    1,
 		dateexpiry: "2099-01-01",
+		branchcode: "hutl",
 	}
 
 	// 1) information from laaner
@@ -198,7 +199,11 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 		case "105":
 			// TODO foresatte = p.contactname ?
 		case "140":
-			p.branchcode = firstSub(f.SubFields, "a")
+			bCode := firstSub(f.SubFields, "a")
+			if bCode != "" && len(bCode) <= 4 && len(bCode) >= 3 {
+				// filter out bad data, accepting only 3 or 4 character labels
+				p.branchcode = bCode
+			}
 		case "150":
 			// TODO melding = p.borrowernotes?
 			// NB feltet er repeterbart

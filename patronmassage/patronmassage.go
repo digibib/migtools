@@ -16,7 +16,9 @@ import (
 	"encoding/csv"
 	"errors"
 	"flag"
+	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,10 +36,11 @@ type Main struct {
 	laaner, lnel              map[int]map[string]string
 	lmarc                     map[int]marc.Record
 	numWorkers                int
+	branches                  map[string]string
 }
 
-func newMain(laaner, lmarc, lnel io.Reader, nw int) Main {
-	return Main{
+func newMain(laaner, lmarc, lnel io.Reader, nw int) *Main {
+	return &Main{
 		laanerIn:   laaner,
 		lmarcIn:    lmarc,
 		lnelIn:     lnel,
@@ -45,10 +48,11 @@ func newMain(laaner, lmarc, lnel io.Reader, nw int) Main {
 		lnel:       make(map[int]map[string]string),
 		lmarc:      make(map[int]marc.Record),
 		numWorkers: nw,
+		branches:   make(map[string]string),
 	}
 }
 
-func (m Main) indexLmarc(wg *sync.WaitGroup) {
+func (m *Main) indexLmarc(wg *sync.WaitGroup) {
 	dec := marc.NewDecoder(m.lmarcIn, marc.LineMARC)
 	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
 		if err != nil {
@@ -67,7 +71,7 @@ func (m Main) indexLmarc(wg *sync.WaitGroup) {
 	log.Println("done indexing lmarc")
 }
 
-func (m Main) indexLaaner(wg *sync.WaitGroup) {
+func (m *Main) indexLaaner(wg *sync.WaitGroup) {
 	dec := NewKVDecoder(m.laanerIn)
 	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
 		if err != nil {
@@ -87,7 +91,7 @@ func (m Main) indexLaaner(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func (m Main) indexLnel(wg *sync.WaitGroup) {
+func (m *Main) indexLnel(wg *sync.WaitGroup) {
 	dec := NewKVDecoder(m.lnelIn)
 	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
 		if err != nil {
@@ -107,7 +111,7 @@ func (m Main) indexLnel(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func (m Main) Run() {
+func (m *Main) Run() {
 	log.Println("start indexing resources")
 
 	var wg sync.WaitGroup
@@ -127,6 +131,13 @@ func (m Main) Run() {
 	defer enc.Flush()
 	go func() {
 		for p := range patrons {
+
+			if bLabel, ok := branchCodes[p.branchcode]; ok {
+				m.branches[p.branchcode] = bLabel
+			} else {
+				m.branches[p.branchcode] = "MISSING LABEL FOR BRANCH: " + p.branchcode
+			}
+
 			if err := enc.Write(patronCSVRow(p)); err != nil {
 				log.Fatal(err)
 			}
@@ -176,7 +187,24 @@ func main() {
 	lnelF := mustOpen(*lnel)
 	defer lnelF.Close()
 
-	newMain(laanerF, lmarcF, lnelF, *numWorkers).Run()
+	m := newMain(laanerF, lmarcF, lnelF, *numWorkers)
+	m.Run()
+
+	fns := template.FuncMap{
+		"plus1": func(x int) int {
+			return x + 1
+		},
+	}
+	templ := template.Must(template.New("branches").Funcs(fns).Parse(branchesSQLtmpl))
+	branchF := mustCreate(filepath.Join(*outDir, "homebranches.sql"))
+	defer branchF.Close()
+	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(*outDir, "categories.sql"), []byte(categoriesSQL), os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func mustOpen(s string) *os.File {
@@ -202,6 +230,23 @@ func borrowernumber(r *marc.Record) (int, error) {
 		}
 	}
 	return 0, errors.New("no borrowernumber in lmarc record")
+}
+
+type Branch struct {
+	Code, Label string
+}
+
+func branchesToSlice(branches map[string]string) []Branch {
+	res := make([]Branch, len(branches))
+	i := 0
+	for code, label := range branches {
+		res[i] = Branch{
+			Code:  code,
+			Label: label,
+		}
+		i++
+	}
+	return res
 }
 
 func patronCSVRow(p patron) []string {
