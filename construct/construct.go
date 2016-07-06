@@ -12,7 +12,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/knakk/rdf"
 	"github.com/knakk/sparql"
@@ -179,6 +178,7 @@ type Main struct {
 	services string
 	virtuoso *sparql.Repo
 
+	enc      *rdf.TripleEncoder
 	wg       sync.WaitGroup      // keep track of completed jobs
 	jobs     chan (Resource)     // channel of resources to be processed
 	complete chan ([]rdf.Triple) // channel of complete resources to be written out
@@ -348,35 +348,29 @@ func (m *Main) addToQueue(resource string) {
 
 // Writer serializes the completed resources to stdout
 func (m *Main) Writer() {
-	enc := rdf.NewTripleEncoder(os.Stdout, rdf.NTriples)
-	defer enc.Close()
 	for tr := range m.complete {
-		if err := enc.EncodeAll(tr); err != nil {
+		if err := m.enc.EncodeAll(tr); err != nil {
 			log.Fatal(err)
 		}
 		m.wg.Done()
 	}
-	m.wg.Done()
 }
 
 // Run executes the migration process
 func (m *Main) Run(workers int) {
-
-	m.wg.Add(1)
+	m.enc = rdf.NewTripleEncoder(os.Stdout, rdf.NTriples)
+	defer m.enc.Close()
 	go m.Writer()
 	m.wg.Add(workers)
 	for i := 0; i < workers; i++ {
 		go m.processResources()
 	}
-
 	for _, r := range []string{"person", "work", "serial", "genre", "subject", "place", "publication"} {
 		m.addToQueue(r)
 	}
 	close(m.jobs)
-	time.Sleep(10 * time.Second) // TODO find better solution. To tired now :-/
-	close(m.complete)
 	m.wg.Wait()
-
+	close(m.complete)
 }
 
 func init() {
