@@ -38,7 +38,7 @@ ln_alt_id ||
 	lmarcDump = `*0010808708
 *102  $a2015-06-30T13:24:44$kMappaMi
 *103  $a2015-06-30T13:24:46$kMappaMi
-*140  $ahutl$bhutl
+*140  $ahutl$bfmaj
 *200  $s0
 *240  $a99887766$cmobilsms
 *250  $s0
@@ -89,7 +89,7 @@ func TestPatronMerge(t *testing.T) {
 		dateenrolled:           "2002-01-11",
 		dateofbirth:            "1911-03-02",
 		dateexpiry:             "2099-01-01",
-		branchcode:             "hutl",
+		branchcode:             "fmaj",
 		categorycode:           "v", // mapped to "V" in Main.Run()
 		TEMP_personnr:          "02031145555",
 		TEMP_nl:                true,
