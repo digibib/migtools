@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -63,13 +62,13 @@ type patron struct {
 		mobile                      string    // `mobile` varchar(50) DEFAULT NULL,
 		flags                       int       // `flags` int(11) DEFAULT NULL,
 		privacy_guarantor_checkouts int       // `privacy_guarantor_checkouts` tinyint(1) NOT NULL DEFAULT '0',
-		address2                    string    // `address2` text
 	*/
 	cardnumber     string // `cardnumber` varchar(16) DEFAULT NULL,
 	userid         string // `userid` varchar(75) DEFAULT NULL,
 	surname        string // `surname` mediumtext NOT NULL,
 	firstname      string // `firstname` text
 	address        string // `address` mediumtext NOT NULL,
+	address2       string // `address2` text
 	city           string // `city` mediumtext NOT NULL,
 	zipcode        string // `zipcode` varchar(25) DEFAULT NULL,
 	country        string // `country` text
@@ -147,12 +146,8 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 		p.dateofbirth = dob.Format(mysqlDateFormat)
 	}
 
-	if laaner["ln_adr2"] != "" {
-		p.address = fmt.Sprintf("%s / %s", laaner["ln_adr2"], laaner["ln_adr1"])
-	} else {
-		p.address = laaner["ln_adr1"]
-	}
-
+	p.address = laaner["ln_adr1"]
+	p.address2 = laaner["ln_adr2"]
 	p.zipcode, p.city = splitZipCity(laaner["ln_post"])
 	p.country = laaner["ln_land"]
 	p.phone = laaner["ln_tlf"]
