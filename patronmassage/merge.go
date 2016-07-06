@@ -166,7 +166,7 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 	p.phone = laaner["ln_tlf"]
 	p.categorycode = laaner["ln_kat"]
 
-	switch laaner["ln_kojenn"] {
+	switch laaner["ln_kjoenn"] {
 	case "k":
 		p.sex = "F"
 	case "m":
