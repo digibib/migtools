@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"strings"
 	"time"
+	"unicode"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -124,6 +126,17 @@ func firstSub(s marc.SubFields, code string) string {
 	return ""
 }
 
+// onlyDigits strip all characters from string except digits and '+' sign
+func onlyDigits(s string) string {
+	var r bytes.Buffer
+	for _, c := range s {
+		if unicode.IsDigit(c) || c == '+' {
+			r.WriteRune(c)
+		}
+	}
+	return r.String()
+}
+
 func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 	// defaults:
 	p := patron{
@@ -214,7 +227,15 @@ func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
 		case "240":
 			// telefonnr (repeterbart felt)
 			// $c = fax|jobb|mobil|mobilsms
-			// TODO
+			v := onlyDigits(firstSub(f.SubFields, "a"))
+			switch firstSub(f.SubFields, "c") {
+			case "jobb":
+				if p.phone == "" {
+					p.phone = v
+				}
+			case "mobil", "mobilsms":
+				p.smsalertnumber = v
+			}
 		case "261":
 			if v := firstSub(f.SubFields, "a"); v != "" {
 				pin, err := bcrypt.GenerateFromPassword([]byte(v), 8)

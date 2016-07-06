@@ -84,6 +84,7 @@ func TestPatronMerge(t *testing.T) {
 		country:                "no",
 		email:                  "testtestesen@gmail.com",
 		phone:                  "",
+		smsalertnumber:         "99887766",
 		userid:                 "808708",
 		dateenrolled:           "2002-01-11",
 		dateofbirth:            "1911-03-02",

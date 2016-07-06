@@ -258,18 +258,21 @@ func branchesToSlice(branches map[string]string) []Branch {
 }
 
 func patronCSVRow(p patron) []string {
-	row := make([]string, 11)
-	row[0] = p.userid
+	row := make([]string, 14)
+	row[0] = p.userid // bibliofil lånernr
 	row[1] = p.cardnumber
 	row[2] = p.surname
 	row[3] = p.firstname
 	row[4] = p.address
-	row[5] = p.zipcode
-	row[6] = p.city
-	row[7] = p.country
-	row[8] = p.smsalertnumber
-	row[9] = p.email
-	row[10] = p.categorycode
+	row[5] = p.address2
+	row[6] = p.zipcode
+	row[7] = p.city
+	row[8] = p.country
+	row[9] = p.phone
+	row[10] = p.smsalertnumber
+	row[11] = p.email
+	row[12] = p.categorycode
+	row[13] = strconv.Itoa(p.privacy)
 	return row
 }
 
