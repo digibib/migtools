@@ -51,16 +51,20 @@ func main() {
 	}
 
 	dec := marc.NewDecoder(f, format)
-
+	enc := marc.NewEncoder(os.Stdout, format)
 	for rec, err := dec.Decode(); err != io.EOF; rec, err = dec.Decode() {
 		if err != nil {
 			log.Fatal(err)
 		}
 		stripDueDate(&rec)
-		rec.DumpTo(os.Stdout, true)
+		removeItems(&rec)
+		if err := enc.Encode(rec); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
+// stripDueDateremove any occurency of 952$q from MARC record.
 func stripDueDate(rec *marc.Record) {
 	for i, f := range rec.DataFields {
 		if f.Tag == "952" {
@@ -71,4 +75,30 @@ func stripDueDate(rec *marc.Record) {
 			}
 		}
 	}
+}
+
+// removeItems removes any items marked as: "Tapt", "Regning", "Tapt. Regning betalt";
+// that is, where 952$1 equals "1", "12", "8"
+func removeItems(rec *marc.Record) {
+	for i, f := range rec.DataFields {
+		if f.Tag == "952" {
+			for _, sf := range f.SubFields {
+				if sf.Code == "1" {
+					switch sf.Value {
+					case "1", "12", "8":
+						rec.DataFields = append(rec.DataFields[:i], rec.DataFields[min(i+1, len(rec.DataFields)):]...)
+						removeItems(rec) // need to start over, since we mutated the slice we're ranging over
+					default:
+					}
+				}
+			}
+		}
+	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
