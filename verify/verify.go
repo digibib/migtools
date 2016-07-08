@@ -71,6 +71,14 @@ var resourceChecks = []ResourceMetric{
 		Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://localhost:8005/ontology#Publication> }"), // TODO use static deichman namespace when ready
 		Elasticsearch: esCount("publication"),
 	},
+	{
+		Name:          "works",
+		Bibliofil:     "",
+		Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
+		Koha:          "",
+		Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://localhost:8005/ontology#Work> }"), // TODO use static deichman namespace when ready
+		Elasticsearch: esCount("work"),
+	},
 }
 
 var circulationChecks = []CirculationMetric{
@@ -112,6 +120,7 @@ func main() {
 			fmt.Fprint(w, "\t")
 
 		}
+		fmt.Fprint(w, "\n")
 	}
 	fmt.Fprintln(w)
 
