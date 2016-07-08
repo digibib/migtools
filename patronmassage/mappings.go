@@ -20,6 +20,15 @@ VALUES
   ("V","Voksen","A","2999-12-31",\N,16),
   ("VGS","Videregående skole","I","2999-12-31",\N,\N);`
 
+	fnrTemplSQL = `
+UPDATE borrower_attributes
+INSERT IGNORE INTO borrower_attributes (borrowernumber, code, attribute)
+SELECT borrowers.borrowernumber,
+       'fnr',
+       '{{.Fnr}}'
+FROM borrowers
+WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
+`
 	categoryCodes = map[string]string{
 		"v":   "V",
 		"NB":  "BIB",

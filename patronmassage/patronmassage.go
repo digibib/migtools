@@ -9,6 +9,7 @@
 //   patrons.csv:      patrons to be imported into Koha MySQL borrowers table
 //   categories.sql    patron categories to be inserted into MySQL
 //   branches.sql      branches to be inserted into MySQL
+//   ext.sql           extended patron attributes (fnr) to be inserted into MySQL
 
 package main
 
@@ -16,7 +17,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"flag"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/boutros/marc"
 )
@@ -129,6 +130,9 @@ func (m *Main) Run() {
 	defer patronsF.Close()
 	enc := csv.NewWriter(patronsF)
 	defer enc.Flush()
+	outExt := mustCreate(filepath.Join(*outDir, "ext.sql"))
+	extTempl := template.Must(template.New("ext").Parse(fnrTemplSQL))
+	defer outExt.Close()
 	go func() {
 		for p := range patrons {
 
@@ -149,6 +153,19 @@ func (m *Main) Run() {
 			if err := enc.Write(patronCSVRow(p)); err != nil {
 				log.Fatal(err)
 			}
+
+			if p.TEMP_personnr != "" {
+				if err := extTempl.Execute(outExt, struct {
+					Fnr                 string
+					BibliofilBorrowerNr string
+				}{
+					BibliofilBorrowerNr: p.userid,
+					Fnr:                 p.TEMP_personnr,
+				}); err != nil {
+					log.Fatal(err)
+				}
+			}
+
 			wg.Done()
 		}
 	}()
