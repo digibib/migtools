@@ -30,6 +30,7 @@ VALUES
   ("LOST","9","vidvanke, registrert forsvunnet"),
   ("LOST","10","retur eieravdeling (ved import)"),
   ("LOST","11","til henteavdeling (ved import)"),
+  ("LOST","12","regning sendt"),
   ("NOT_LOAN","-1","i bestilling"),
   ("NOT_LOAN","2","ny"),
   ("NOT_LOAN","3","til internt bruk"),
@@ -74,6 +75,7 @@ VALUES
 		// LOST values:
 		"t": marc.SubField{Code: "1", Value: "1"},  // tapt
 		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
+		"r": marc.SubField{Code: "1", Value: "12"}, // regning sendt
 		"i": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
 		"p": marc.SubField{Code: "1", Value: "5"},  // påstått levert
 		"l": marc.SubField{Code: "1", Value: "6"},  // påstått ikke lånt
