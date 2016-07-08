@@ -177,6 +177,9 @@ func (m *Main) Run() {
 				if !strings.HasPrefix(p.surname, "!!") {
 					// deleted patrons are prefixed with !!
 					wg.Add(1)
+					if p.cardnumber == "" {
+						p.cardnumber = p.userid
+					}
 					patrons <- p
 				}
 			}
