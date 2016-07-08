@@ -21,7 +21,6 @@ VALUES
   ("VGS","Videregående skole","I","2999-12-31",\N,\N);`
 
 	fnrTemplSQL = `
-UPDATE borrower_attributes
 INSERT IGNORE INTO borrower_attributes (borrowernumber, code, attribute)
 SELECT borrowers.borrowernumber,
        'fnr',
