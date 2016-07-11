@@ -14,6 +14,7 @@ VALUES
 `
 
 	aValuesSQL = `
+DELETE FROM authorised_values WHERE category IN ("WITHDRAWN", "LOST", "NOT_LOAN", "RESTRICTED", "DAMAGED");
 INSERT INTO authorised_values
   (category, authorised_value, lib)
 VALUES
