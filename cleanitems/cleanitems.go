@@ -4,6 +4,7 @@
 //  * removes any due dates (952$q)
 //  * removes items makred as lost, paid for ++
 //    TODO get specifics! 952$7=? 952$1=?
+//  * sets item type 952$y to "L" for "Læremidler"
 //
 // The result is dumped to standard out
 package main
@@ -58,6 +59,7 @@ func main() {
 		}
 		stripDueDate(&rec)
 		removeItems(&rec)
+		setItemType(&rec)
 		if err := enc.Encode(rec); err != nil {
 			log.Fatal(err)
 		}
@@ -90,6 +92,18 @@ func removeItems(rec *marc.Record) {
 						removeItems(rec) // need to start over, since we mutated the slice we're ranging over
 					default:
 					}
+				}
+			}
+		}
+	}
+}
+
+func setItemType(rec *marc.Record) {
+	for i, f := range rec.DataFields {
+		if f.Tag == "952" {
+			for j, sf := range f.SubFields {
+				if sf.Code == "y" {
+					rec.DataFields[i].SubFields[j].Value = "L"
 				}
 			}
 		}
