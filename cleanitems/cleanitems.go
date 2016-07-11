@@ -59,6 +59,7 @@ func main() {
 		}
 		stripDueDate(&rec)
 		removeItems(&rec)
+		stripStatusCodes(&rec)
 		setItemType(&rec)
 		if err := enc.Encode(rec); err != nil {
 			log.Fatal(err)
@@ -79,15 +80,15 @@ func stripDueDate(rec *marc.Record) {
 	}
 }
 
-// removeItems removes any items marked as: "Tapt", "Regning", "Tapt. Regning betalt";
-// that is, where 952$1 equals "1", "12", "8"
+// removeItems removes any items marked as: "Tapt", "Regning", "Tapt. Regning betalt", "påstått ikke lånt;
+// that is, where 952$1 equals "1", "12", "8", "5"
 func removeItems(rec *marc.Record) {
 	for i, f := range rec.DataFields {
 		if f.Tag == "952" {
 			for _, sf := range f.SubFields {
 				if sf.Code == "1" {
 					switch sf.Value {
-					case "1", "12", "8":
+					case "1", "12", "8", "5":
 						rec.DataFields = append(rec.DataFields[:i], rec.DataFields[min(i+1, len(rec.DataFields)):]...)
 						removeItems(rec) // need to start over, since we mutated the slice we're ranging over
 					default:
@@ -105,6 +106,33 @@ func setItemType(rec *marc.Record) {
 				if sf.Code == "y" {
 					rec.DataFields[i].SubFields[j].Value = "L"
 				}
+			}
+		}
+	}
+}
+
+// stripStatusCodes remove some status codes from 952$7 and 952$1, namely:
+//   lost: "på vidvanke", "return eieravdeling", "til henteavdeling"
+//   notloan: "ny"
+func stripStatusCodes(rec *marc.Record) {
+	for i, f := range rec.DataFields {
+		if f.Tag == "952" {
+			for j, sf := range f.SubFields {
+				if sf.Code == "1" && (sf.Value == "9" || sf.Value == "10" || sf.Value == "11") {
+					// remove lost codes for "på vidvanke", "return eieravdeling", "til henteavdeling"
+					rec.DataFields[i].SubFields = append(
+						rec.DataFields[i].SubFields[:j],
+						rec.DataFields[i].SubFields[min(j+1, len(rec.DataFields[i].SubFields)):]...)
+					stripStatusCodes(rec) // need to start over, since we mutated the slice we're ranging over
+				}
+				if sf.Code == "7" && (sf.Value == "2") {
+					// remove notforloan codes for "ny"
+					rec.DataFields[i].SubFields = append(
+						rec.DataFields[i].SubFields[:j],
+						rec.DataFields[i].SubFields[min(j+1, len(rec.DataFields[i].SubFields)):]...)
+					stripStatusCodes(rec) // need to start over, since we mutated the slice we're ranging over
+				}
+
 			}
 		}
 	}
