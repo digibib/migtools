@@ -10,6 +10,7 @@
 //   categories.sql    patron categories to be inserted into MySQL
 //   branches.sql      branches to be inserted into MySQL
 //   ext.sql           extended patron attributes (fnr) to be inserted into MySQL
+//   msgprefs.sql      message preferenses to be inserted into MySQL
 
 package main
 
@@ -17,6 +18,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -136,6 +138,11 @@ func (m *Main) Run() {
 	outExt := mustCreate(filepath.Join(*outDir, "ext.sql"))
 	extTempl := template.Must(template.New("ext").Parse(fnrTemplSQL))
 	defer outExt.Close()
+	outMsgPrefs := mustCreate(filepath.Join(*outDir, "msgprefs.sql"))
+	defer outMsgPrefs.Close()
+	if _, err := outMsgPrefs.WriteString(msgPrefsInit); err != nil {
+		log.Fatal(err)
+	}
 	go func() {
 		for p := range patrons {
 
@@ -165,6 +172,65 @@ func (m *Main) Run() {
 					BibliofilBorrowerNr: p.userid,
 					Fnr:                 p.TEMP_personnr,
 				}); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			/*
+				TEMP_sistelaan         string
+				TEMP_personnr          string
+				TEMP_nl                bool
+				TEMP_hjemmebibnr       string
+				TEMP_res_transport     string
+				TEMP_pur_transport     string
+				TEMP_fvarsel_transport string
+			*/
+			var msgTmpl, transport string
+			msgTmpl = msgHold
+			switch p.TEMP_res_transport {
+			case "epost":
+				transport = "email"
+			case "post":
+				transport = "print"
+			case "sms":
+				transport = "sms"
+			default:
+				msgTmpl = ""
+			}
+			if msgTmpl != "" {
+				if _, err := outMsgPrefs.WriteString(fmt.Sprintf(msgTmpl, transport, p.userid)); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			msgTmpl = msgDue
+			switch p.TEMP_pur_transport {
+			case "epost":
+				transport = "email"
+			case "post":
+				transport = "print"
+			case "sms":
+				transport = "sms"
+			default:
+				msgTmpl = ""
+			}
+			if msgTmpl != "" {
+				if _, err := outMsgPrefs.WriteString(fmt.Sprintf(msgTmpl, transport, p.userid)); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			msgTmpl = msgNotice
+			switch p.TEMP_fvarsel_transport {
+			case "epost":
+				transport = "email"
+			case "sms":
+				transport = "sms"
+			default:
+				msgTmpl = ""
+			}
+			if msgTmpl != "" {
+				if _, err := outMsgPrefs.WriteString(fmt.Sprintf(msgTmpl, transport, p.userid)); err != nil {
 					log.Fatal(err)
 				}
 			}
