@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -8,25 +9,6 @@ import (
 	"strings"
 	"text/tabwriter"
 )
-
-/*
-
-Migration verify
-==========================
-
-Resources
-             Bibliofil  Prepared  Koha   Fuseki  Elasticsearch
-publications 4000000    -         364524 43634   34545
-works        -          30000     -      30000   2000
-persons      ?          x         -
-items
-
-Circulation
-             Bibliofil Prepared Koha
-patrons      21234     2342 34  23423
-loans        345345    -        345
-reservations 234234
-*/
 
 const (
 	mysqlCountTmpl = `mysql --default-character-set=utf8 -h koha_mysql -u$MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE -e %q | tail -n 1`
@@ -68,7 +50,7 @@ var resourceChecks = []ResourceMetric{
 		Bibliofil:     `ls -1 /data/*vmarc.*.txt | xargs cat | grep "*001" | wc -l`,
 		Prepared:      `cat /out/catalogue.mrc | grep -o $'\035' | wc -l`,
 		Koha:          mysqlCount("SELECT COUNT(*) FROM biblioitems"),
-		Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://localhost:8005/ontology#Publication> }"), // TODO use static deichman namespace when ready
+		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Publication> }")), // TODO use static deichman namespace when ready
 		Elasticsearch: esCount("publication"),
 	},
 	{
@@ -76,7 +58,7 @@ var resourceChecks = []ResourceMetric{
 		Bibliofil:     "",
 		Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
 		Koha:          "",
-		Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://localhost:8005/ontology#Work> }"), // TODO use static deichman namespace when ready
+		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Work> }")), // TODO use static deichman namespace when ready
 		Elasticsearch: esCount("work"),
 	},
 }
@@ -94,7 +76,17 @@ func init() {
 	log.SetFlags(0)
 }
 
+var host = "localhost"
+
+func withHost(s string) string {
+	return fmt.Sprintf(s, host)
+}
+
 func main() {
+	hostFlag := flag.String("h", "localhost", "namespace host (for RDF ontology)")
+	flag.Parse()
+	host = *hostFlag
+
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 1, '\t', 0)
 	defer w.Flush()
