@@ -433,6 +433,21 @@ func (m *Main) Run() error {
 		// strip items beloning to bjornholt-læremidler and nydalen-læremidler
 		fbjl, fnyl := splitItems(&r)
 
+		//TEMP add id to 999$c &999$d
+		r.DataFields = append(r.DataFields, marc.DField{
+			Tag: "999",
+			SubFields: []marc.SubField{
+				marc.SubField{
+					Code:  "c",
+					Value: tnr,
+				},
+				marc.SubField{
+					Code:  "d",
+					Value: tnr,
+				},
+			},
+		})
+
 		// encode marc record with items to be migrated to Koha
 		if err = encMARC.Encode(r); err != nil {
 			log.Println(err)
