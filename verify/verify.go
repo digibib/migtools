@@ -61,6 +61,22 @@ var resourceChecks = []ResourceMetric{
 		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Work> }")), // TODO use static deichman namespace when ready
 		Elasticsearch: esCount("work"),
 	},
+	{
+		Name:          "persons",
+		Bibliofil:     "",
+		Prepared:      `cat /out/resources.nt | grep -o "#Person>" | wc -l`,
+		Koha:          "",
+		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Person> }")), // TODO use static deichman namespace when ready
+		Elasticsearch: esCount("person"),
+	},
+	{
+		Name:          "subjects",
+		Bibliofil:     "",
+		Prepared:      `cat /out/resources.nt | grep -o "#Subject>" | wc -l`,
+		Koha:          "",
+		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Subject> }")), // TODO use static deichman namespace when ready
+		Elasticsearch: esCount("subject"),
+	},
 }
 
 var circulationChecks = []CirculationMetric{
