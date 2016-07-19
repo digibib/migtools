@@ -117,6 +117,7 @@ WHERE {
 			role:editor
 			role:contributor
 			role:coreographer
+			role:publisher
 		}
 	}
 }
@@ -146,6 +147,7 @@ WHERE {
 		role:illustrator
 		role:contributor
 		role:coreographer
+		role:publisher
 		}
 	}
 }
