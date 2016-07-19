@@ -65,9 +65,7 @@ CONSTRUCT {
 }
 WHERE {
 	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
-		?pub :publicationOf <{{.URI}}> .
-		OPTIONAL {
-			?pub ?role ?agent .
+		<{{.URI}}> ?role ?agent
 			VALUES ?role {
 				role:scriptWriter
 				role:actor
@@ -77,7 +75,6 @@ WHERE {
 				role:editor
 				role:lyricist
 			}
-		}
 		OPTIONAL {
 			?pub :mainEntry ?agent
 			BIND(:MainEntry AS ?mainEntry)
