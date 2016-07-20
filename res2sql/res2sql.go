@@ -25,7 +25,7 @@ SELECT borrowers.borrowernumber,
        '{{.Priority}}',
        '{{.Status}}',
        '{{.ExpirationDate}}'
-FROM borrowers WHERE borrowers.userid='{{.Borrowernumber}}';
+FROM borrowers JOIN biblio WHERE borrowers.userid='{{.Borrowernumber}}' AND biblio.biblionumber='{{.Biblionumber}}';
 `
 
 	sqlTmplWithEx = `
@@ -39,8 +39,8 @@ SELECT borrowers.borrowernumber,
        '{{.Status}}',
        items.itemnumber,
        '{{.ExpirationDate}}'
-FROM borrowers JOIN items
-WHERE barcode='{{.Barcode}}' AND borrowers.userid='{{.Borrowernumber}}';
+FROM borrowers JOIN items JOIN biblio
+WHERE barcode='{{.Barcode}}' AND borrowers.userid='{{.Borrowernumber}}' AND biblio.biblionumber='{{.Biblionumber}}';
 `
 )
 
