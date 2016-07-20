@@ -86,6 +86,18 @@ var circulationChecks = []CirculationMetric{
 		Prepared:  "cat /out/patrons.csv | wc -l",
 		Koha:      mysqlCount("SELECT count(*) FROM borrowers"),
 	},
+	{
+		Name:      "issues",
+		Bibliofil: `ls -1 /data/*exemp.*.txt | xargs cat | grep "ex_laanr |[^-]" | wc -l`,
+		Prepared:  "cat /out/issues.sql | grep INSERT | wc -l",
+		Koha:      mysqlCount("SELECT count(*) FROM issues"),
+	},
+	{
+		Name:      "holds",
+		Bibliofil: `ls -1 /data/*res.*.txt | xargs cat | grep res_titnr | wc -l`,
+		Prepared:  "cat /out/holds.sql | grep INSERT | wc -l",
+		Koha:      mysqlCount("SELECT count(*) FROM reserves"),
+	},
 }
 
 func init() {
@@ -107,7 +119,7 @@ func main() {
 	w.Init(os.Stdout, 0, 8, 1, '\t', 0)
 	defer w.Flush()
 
-	fmt.Fprintln(w, "Verifying resources")
+	fmt.Fprintln(w, "Verifying resources\n===================\n")
 	fmt.Fprintln(w, "\tBibliofil\tPrepared\tKoha\tFuseki\tElasticsearch")
 	for _, c := range resourceChecks {
 		fmt.Fprint(w, c.Name)
@@ -132,7 +144,7 @@ func main() {
 	}
 	fmt.Fprintln(w)
 
-	fmt.Fprintln(w, "\nVerifying circulation data")
+	fmt.Fprintln(w, "\nVerifying patrons and circulation data\n======================================\n")
 	fmt.Fprintln(w, "\tBibliofil\tPrepared\tKoha")
 	for _, c := range circulationChecks {
 		fmt.Fprint(w, c.Name)
@@ -151,8 +163,8 @@ func main() {
 				fmt.Fprint(w, strings.TrimSpace(string(out)))
 			}
 			fmt.Fprint(w, "\t")
-
 		}
+		fmt.Fprint(w, "\n")
 	}
 	fmt.Fprintln(w)
 }
