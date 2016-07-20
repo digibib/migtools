@@ -16,7 +16,7 @@ const (
 	noDateFormat    = "02/01/2006"
 	mysqlDateFormat = "2006-01-02"
 	sqlTmpl         = `
-INSERT INTO reserves
+INSERT IGNORE INTO reserves
   (borrowernumber, reservedate, biblionumber, branchcode, priority, found, expirationdate)
 SELECT borrowers.borrowernumber,
        '{{.ReserveDate}}',
@@ -29,7 +29,7 @@ FROM borrowers WHERE borrowers.userid='{{.Borrowernumber}}';
 `
 
 	sqlTmplWithEx = `
-INSERT INTO reserves
+INSERT IGNORE INTO reserves
   (borrowernumber, reservedate, biblionumber, branchcode, priority, found, itemnumber, expirationdate)
 SELECT borrowers.borrowernumber,
        '{{.ReserveDate}}',
