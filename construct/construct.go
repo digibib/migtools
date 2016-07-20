@@ -66,17 +66,15 @@ CONSTRUCT {
 WHERE {
 	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
 		?pub :publicationOf <{{.URI}}> .
-		OPTIONAL {
-			?pub ?role ?agent .
-			VALUES ?role {
-				role:scriptWriter
-				role:actor
-				role:composer
-				role:director
-				role:author
-				role:editor
-				role:lyricist
-			}
+		?pub ?role ?agent .
+		VALUES ?role {
+			role:scriptWriter
+			role:actor
+			role:composer
+			role:director
+			role:author
+			role:editor
+			role:lyricist
 		}
 		OPTIONAL {
 			?pub :mainEntry ?agent
