@@ -142,7 +142,6 @@ WHERE {
 		role:musicalArranger
 		role:reader
 		role:conductor
-		role:author
 		role:translator
 		role:illustrator
 		role:contributor
