@@ -77,7 +77,9 @@ WHERE {
 			role:lyricist
 		}
 		OPTIONAL {
-			?pub :mainEntry ?agent
+			?pub :publicationOf <{{.URI}}> ;
+			     :mainEntry ?agent ;
+			     ?role ?agent .
 			BIND(:MainEntry AS ?mainEntry)
 		}
 	}
