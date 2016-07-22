@@ -61,16 +61,12 @@ CONSTRUCT {
 	<{{.URI}}> :contributor [
 		:agent ?agent ;
 		:role ?role ;
-		a :Contribution, ?mainEntry ] .
+		a :Contribution ] .
 }
 WHERE {
-	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
+	SELECT DISTINCT ?agent ?role WHERE {
 		?pub :publicationOf <{{.URI}}> .
 		?pub ?role ?agent .
-		OPTIONAL {
-			?pub :mainEntry ?agent .
-			BIND(:MainEntry AS ?mainEntry)
-		}
 		VALUES ?role {
 			role:scriptWriter
 			role:actor
@@ -80,6 +76,24 @@ WHERE {
 			role:editor
 			role:lyricist
 		}
+		MINUS { ?pub :mainEntry ?agent }
+	}
+}
+
+# tag: constructWorkMainEntryContribution
+PREFIX     : <{{.Services}}/ontology#>
+PREFIX role: <http://data.deichman.no/role#>
+WITH <http://deichman.no/migration>
+CONSTRUCT {
+	<{{.URI}}> :contributor [
+		:agent ?agent ;
+		:role ?role ;
+		a :Contribution, :MainEntry ] .
+}
+WHERE {
+	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
+		?pub :publicationOf <{{.URI}}> .
+		?pub ?role ?agent .
 	}
 }
 
@@ -252,6 +266,7 @@ getJob:
 			"work": {
 				"constructWork",
 				"constructWorkContributions",
+				"constructWorkMainEntryContribution",
 			},
 			"person": {
 				"constructResource",
