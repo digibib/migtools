@@ -112,6 +112,7 @@ func withHost(s string) string {
 
 func main() {
 	hostFlag := flag.String("h", "localhost", "namespace host (for RDF ontology)")
+	skipCirc := flag.Bool("nocirc", true, "skip circulation verificaitons")
 	flag.Parse()
 	host = *hostFlag
 
@@ -143,6 +144,10 @@ func main() {
 		fmt.Fprint(w, "\n")
 	}
 	fmt.Fprintln(w)
+
+	if *skipCirc {
+		return
+	}
 
 	fmt.Fprintln(w, "\nVerifying patrons and circulation data\n======================================\n")
 	fmt.Fprintln(w, "\tBibliofil\tPrepared\tKoha")
