@@ -91,7 +91,7 @@ CONSTRUCT {
 }
 WHERE {
 	SELECT DISTINCT ?agent ?role WHERE {
-		?pub :publicationOf <{{.URI}}> .
+		?pub :publicationOf <{{.URI}}> ;
 		     ?role ?agent ;
 		     :mainEntry ?agent .
 	}
