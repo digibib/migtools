@@ -277,8 +277,8 @@ getJob:
 			},
 			"work": {
 				"constructWork",
-				"constructWorkContributions",
 				"constructWorkMainEntryContribution",
+				"constructWorkContributions",
 			},
 			"person": {
 				"constructResource",
