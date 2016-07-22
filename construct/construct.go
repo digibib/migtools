@@ -91,9 +91,10 @@ CONSTRUCT {
 		a :Contribution, :MainEntry ] .
 }
 WHERE {
-	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
+	SELECT DISTINCT ?agent ?role WHERE {
 		?pub :publicationOf <{{.URI}}> .
-		?pub ?role ?agent .
+		     ?role ?agent ;
+		     ?mainEntry ?agent .
 	}
 }
 
