@@ -82,7 +82,6 @@ WHERE {
 
 # tag: constructWorkMainEntryContribution
 PREFIX     : <{{.Services}}/ontology#>
-PREFIX role: <http://data.deichman.no/role#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
 	<{{.URI}}> :contributor [
@@ -94,7 +93,7 @@ WHERE {
 	SELECT DISTINCT ?agent ?role WHERE {
 		?pub :publicationOf <{{.URI}}> .
 		     ?role ?agent ;
-		     ?mainEntry ?agent .
+		     :mainEntry ?agent .
 	}
 }
 
