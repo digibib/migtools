@@ -52,7 +52,7 @@ func main() {
 				}
 				fmt.Printf("%s %s", tr.Pred.Serialize(rdf.NTriples), tr.Obj.Serialize(rdf.NTriples))
 			}
-			fmt.Print(" . ]\n")
+			fmt.Print(" ] . \n")
 		} else if tr.Subj.Type() != rdf.TermBlank {
 			fmt.Print(tr.Serialize(rdf.NTriples))
 		}
