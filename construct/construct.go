@@ -172,7 +172,7 @@ WHERE {
 		role:coreographer
 		role:publisher
 		}
-	}
+	} LIMIT 1
 }
 
 # tag: constructPublicationSerials
