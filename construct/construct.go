@@ -249,7 +249,7 @@ func (m *Main) ensureUniqueBNodeIDs(tr []rdf.Triple) {
 			id := t.Subj.(rdf.Blank)
 			if _, ok := bnodes[id]; !ok {
 				atomic.AddUint64(&m.bnodeID, 1)
-				bnodes[id] = mustBlank(strconv.FormatUint(atomic.LoadUint64(&m.bnodeID), 10))
+				bnodes[id] = mustBlank("b" + strconv.FormatUint(atomic.LoadUint64(&m.bnodeID), 10))
 			}
 			tr[i].Subj = bnodes[id]
 		}
@@ -257,7 +257,7 @@ func (m *Main) ensureUniqueBNodeIDs(tr []rdf.Triple) {
 			id := t.Obj.(rdf.Blank)
 			if _, ok := bnodes[id]; !ok {
 				atomic.AddUint64(&m.bnodeID, 1)
-				bnodes[id] = mustBlank(strconv.FormatUint(atomic.LoadUint64(&m.bnodeID), 10))
+				bnodes[id] = mustBlank("b" + strconv.FormatUint(atomic.LoadUint64(&m.bnodeID), 10))
 			}
 			tr[i].Obj = bnodes[id]
 		}
