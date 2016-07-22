@@ -87,7 +87,7 @@ CONSTRUCT {
 	<{{.URI}}> :contributor [
 		:agent ?agent ;
 		:role ?role ;
-		a :Contribution ] .
+		a :Contribution, :MainEntry ] .
 }
 WHERE {
 	SELECT DISTINCT ?agent ?role WHERE {
