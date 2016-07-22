@@ -94,6 +94,7 @@ WHERE {
 		?pub :publicationOf <{{.URI}}> ;
 		     :mainEntry ?agent ;
 		     ?role ?agent .
+		FILTER(?role != :mainEntry)
 	}
 }
 
