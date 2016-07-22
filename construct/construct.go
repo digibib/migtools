@@ -94,7 +94,17 @@ WHERE {
 		?pub :publicationOf <{{.URI}}> ;
 		     :mainEntry ?agent ;
 		     ?role ?agent .
-		FILTER(?role != :mainEntry)
+		VALUES ?role {
+			role:scriptWriter
+			role:actor
+			role:composer
+			role:director
+			role:author
+			role:editor
+			role:lyricist
+			role:illustrator
+			role:performer
+		}
 	}
 }
 
