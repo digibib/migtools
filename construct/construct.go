@@ -76,7 +76,7 @@ WHERE {
 			role:editor
 			role:lyricist
 		}
-		MINUS { ?pub :mainEntry ?agent }
+		FILTER NOT EXISTS { ?pub :mainEntry ?agent }
 	}
 }
 
