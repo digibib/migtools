@@ -87,14 +87,13 @@ CONSTRUCT {
 	<{{.URI}}> :contributor [
 		:agent ?agent ;
 		:role ?role ;
-		a :Contribution, ?mainEntry ] .
+		a :Contribution ] .
 }
 WHERE {
-	SELECT DISTINCT ?agent ?role ?mainEntry WHERE {
+	SELECT DISTINCT ?agent ?role WHERE {
 		?pub :publicationOf <{{.URI}}> ;
-		     ?role ?agent ;
-		     :mainEntry ?agent .
-		BIND(:MainEntry AS ?mainEntry)
+		     :mainEntry ?agent ;
+		     ?role ?agent .
 	}
 }
 
