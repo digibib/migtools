@@ -313,6 +313,7 @@ getJob:
 				}()
 				continue getJob
 			}
+			m.ensureUniqueBNodeIDs(tr)
 			triples = append(triples, tr...)
 		}
 
@@ -321,7 +322,6 @@ getJob:
 		copy(job.New, job.Old)
 
 		stripGyearTimeZone(job.New)
-		m.ensureUniqueBNodeIDs(job.New)
 
 		m.wg.Add(1)
 		m.complete <- job.New
