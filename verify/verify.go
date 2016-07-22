@@ -100,6 +100,28 @@ var circulationChecks = []CirculationMetric{
 	},
 }
 
+var interestingNumbers = map[string]string{
+	"publications not belonging to any work": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication .
+			MINUS { ?p :publicationOf ?w .
+				    ?w a :Work }
+		}`),
+	"works with two MainEntry contributions": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?w)
+		WHERE {
+			?w a :Work ;
+			   :contributor ?bnode1 .
+			?bnode1 a :MainEntry .
+			?w :contributor ?bnode2 .
+			?bnode2 a :MainEntry .
+			FILTER(?bnode1 != ?bnode2)
+		}`),
+}
+
 func init() {
 	log.SetFlags(0)
 }
@@ -141,6 +163,22 @@ func main() {
 			fmt.Fprint(w, "\t")
 
 		}
+		fmt.Fprint(w, "\n")
+	}
+	fmt.Fprintln(w)
+
+	fmt.Fprintln(w, "\nInterseting numbers\n===================\n")
+	for label, q := range interestingNumbers {
+		fmt.Fprint(w, label)
+		fmt.Fprint(w, ": ")
+		cmd := exec.Command("/bin/sh", "-c", sparql(q))
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Printf("failed command: %q\n", sparql(q))
+			log.Println(string(out))
+			log.Fatal(err)
+		}
+		fmt.Fprint(w, strings.TrimSpace(string(out)))
 		fmt.Fprint(w, "\n")
 	}
 	fmt.Fprintln(w)
