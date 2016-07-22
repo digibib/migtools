@@ -82,6 +82,7 @@ WHERE {
 
 # tag: constructWorkMainEntryContribution
 PREFIX     : <{{.Services}}/ontology#>
+PREFIX role: <http://data.deichman.no/role#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
 	<{{.URI}}> :contributor [
