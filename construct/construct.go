@@ -96,7 +96,7 @@ WHERE {
 		?pub :publicationOf <{{.URI}}> ;
 		     :mainEntry ?agent ;
 			 migration:mainEntryRole ?role .
-	}
+	} LIMIT 1
 }
 
 # tag: constructPublication
