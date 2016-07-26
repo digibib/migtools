@@ -183,8 +183,6 @@ func main() {
 
 	fmt.Fprintln(w, "\nInterseting numbers\n===================\n")
 	for label, q := range interestingNumbers {
-		fmt.Fprint(w, label)
-		fmt.Fprint(w, ": ")
 		cmd := exec.Command("/bin/sh", "-c", sparql(q))
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -193,6 +191,8 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Fprint(w, strings.TrimSpace(string(out)))
+		fmt.Fprint(w, "\t")
+		fmt.Fprint(w, label)
 		fmt.Fprint(w, "\n")
 	}
 	fmt.Fprintln(w)
