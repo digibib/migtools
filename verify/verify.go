@@ -127,6 +127,13 @@ var interestingNumbers = map[string]string{
 			?p a :Publication
 			FILTER NOT EXISTS { ?p :mediaType ?mediaType }
 		}`),
+	"Publications without format": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication
+			FILTER NOT EXISTS { ?p :format ?format }
+		}`),
 }
 
 func init() {
