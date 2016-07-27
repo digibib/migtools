@@ -134,6 +134,14 @@ var interestingNumbers = map[string]string{
 			?p a :Publication
 			FILTER NOT EXISTS { ?p :format ?format }
 		}`),
+	"Publication with raw:publicationPlace but not conneted to place of publication": withHost(`
+		PREFIX :    <http://%s:8005/ontology#>
+		PREFIX raw: <http://data.deichman.no/raw#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p raw:publicationPlace ?rawPlaceLabel .
+			FILTER NOT EXISTS { ?p :hasPlaceOfPublication ?place . }
+		}`),
 }
 
 func init() {
