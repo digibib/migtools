@@ -44,106 +44,6 @@ type CirculationMetric struct {
 	Koha      string
 }
 
-var resourceChecks = []ResourceMetric{
-	{
-		Name:          "publications",
-		Bibliofil:     `ls -1 /data/*vmarc.*.txt | xargs cat | grep "*001" | wc -l`,
-		Prepared:      `cat /out/catalogue.mrc | grep -o $'\035' | wc -l`,
-		Koha:          mysqlCount("SELECT COUNT(*) FROM biblioitems"),
-		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Publication> }")), // TODO use static deichman namespace when ready
-		Elasticsearch: esCount("publication"),
-	},
-	{
-		Name:          "works",
-		Bibliofil:     "",
-		Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
-		Koha:          "",
-		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Work> }")), // TODO use static deichman namespace when ready
-		Elasticsearch: esCount("work"),
-	},
-	{
-		Name:          "persons",
-		Bibliofil:     "",
-		Prepared:      `cat /out/resources.nt | grep -o "#Person>" | wc -l`,
-		Koha:          "",
-		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Person> }")), // TODO use static deichman namespace when ready
-		Elasticsearch: esCount("person"),
-	},
-	{
-		Name:          "subjects",
-		Bibliofil:     "",
-		Prepared:      `cat /out/resources.nt | grep -o "#Subject>" | wc -l`,
-		Koha:          "",
-		Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Subject> }")), // TODO use static deichman namespace when ready
-		Elasticsearch: esCount("subject"),
-	},
-}
-
-var circulationChecks = []CirculationMetric{
-	{
-		Name:      "patrons",
-		Bibliofil: "ls -1 /data/*laaner.*.txt | xargs cat | grep ln_nr | wc -l",
-		Prepared:  "cat /out/patrons.csv | wc -l",
-		Koha:      mysqlCount("SELECT count(*) FROM borrowers"),
-	},
-	{
-		Name:      "issues",
-		Bibliofil: `ls -1 /data/*exemp.*.txt | xargs cat | grep "ex_laanr |[^-]" | wc -l`,
-		Prepared:  "cat /out/issues.sql | grep INSERT | wc -l",
-		Koha:      mysqlCount("SELECT count(*) FROM issues"),
-	},
-	{
-		Name:      "holds",
-		Bibliofil: `ls -1 /data/*res.*.txt | xargs cat | grep res_titnr | wc -l`,
-		Prepared:  "cat /out/holds.sql | grep INSERT | wc -l",
-		Koha:      mysqlCount("SELECT count(*) FROM reserves"),
-	},
-}
-
-var interestingNumbers = map[string]string{
-	"Publications not belonging to any work": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
-		SELECT COUNT(DISTINCT ?p)
-		WHERE {
-			?p a :Publication .
-			MINUS { ?p :publicationOf ?w .
-				    ?w a :Work }
-		}`),
-	"Works with two MainEntry contributions": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
-		SELECT COUNT(DISTINCT ?w)
-		WHERE {
-			?w a :Work ;
-			   :contributor ?bnode1 .
-			?bnode1 a :MainEntry .
-			?w :contributor ?bnode2 .
-			?bnode2 a :MainEntry .
-			FILTER(?bnode1 != ?bnode2)
-		}`),
-	"Publications without mediatype": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
-		SELECT COUNT(DISTINCT ?p)
-		WHERE {
-			?p a :Publication
-			FILTER NOT EXISTS { ?p :mediaType ?mediaType }
-		}`),
-	"Publications without format": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
-		SELECT COUNT(DISTINCT ?p)
-		WHERE {
-			?p a :Publication
-			FILTER NOT EXISTS { ?p :format ?format }
-		}`),
-	"Publication with raw:publicationPlace but not conneted to place of publication": withHost(`
-		PREFIX :    <http://%s:8005/ontology#>
-		PREFIX raw: <http://data.deichman.no/raw#>
-		SELECT COUNT(DISTINCT ?p)
-		WHERE {
-			?p raw:publicationPlace ?rawPlaceLabel .
-			FILTER NOT EXISTS { ?p :hasPlaceOfPublication ?place . }
-		}`),
-}
-
 func init() {
 	log.SetFlags(0)
 }
@@ -164,6 +64,40 @@ func main() {
 	w.Init(os.Stdout, 0, 8, 1, '\t', 0)
 	defer w.Flush()
 
+	resourceChecks := []ResourceMetric{
+		{
+			Name:          "publications",
+			Bibliofil:     `ls -1 /data/*vmarc.*.txt | xargs cat | grep "*001" | wc -l`,
+			Prepared:      `cat /out/catalogue.mrc | grep -o $'\035' | wc -l`,
+			Koha:          mysqlCount("SELECT COUNT(*) FROM biblioitems"),
+			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Publication> }")), // TODO use static deichman namespace when ready
+			Elasticsearch: esCount("publication"),
+		},
+		{
+			Name:          "works",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Work> }")), // TODO use static deichman namespace when ready
+			Elasticsearch: esCount("work"),
+		},
+		{
+			Name:          "persons",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Person>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Person> }")), // TODO use static deichman namespace when ready
+			Elasticsearch: esCount("person"),
+		},
+		{
+			Name:          "subjects",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Subject>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Subject> }")), // TODO use static deichman namespace when ready
+			Elasticsearch: esCount("subject"),
+		},
+	}
 	fmt.Fprintln(w, "Verifying resources\n===================\n")
 	fmt.Fprintln(w, "\tBibliofil\tPrepared\tKoha\tFuseki\tElasticsearch")
 	for _, c := range resourceChecks {
@@ -189,6 +123,50 @@ func main() {
 	}
 	fmt.Fprintln(w)
 
+	interestingNumbers := map[string]string{
+		"Publications not belonging to any work": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication .
+			MINUS { ?p :publicationOf ?w .
+				    ?w a :Work }
+		}`),
+		"Works with two MainEntry contributions": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?w)
+		WHERE {
+			?w a :Work ;
+			   :contributor ?bnode1 .
+			?bnode1 a :MainEntry .
+			?w :contributor ?bnode2 .
+			?bnode2 a :MainEntry .
+			FILTER(?bnode1 != ?bnode2)
+		}`),
+		"Publications without mediatype": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication
+			FILTER NOT EXISTS { ?p :mediaType ?mediaType }
+		}`),
+		"Publications without format": withHost(`
+		PREFIX : <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication
+			FILTER NOT EXISTS { ?p :format ?format }
+		}`),
+		"Publication with raw:publicationPlace but not conneted to place of publication": withHost(`
+		PREFIX :    <http://%s:8005/ontology#>
+		PREFIX raw: <http://data.deichman.no/raw#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p raw:publicationPlace ?rawPlaceLabel .
+			FILTER NOT EXISTS { ?p :hasPlaceOfPublication ?place . }
+		}`),
+	}
+
 	fmt.Fprintln(w, "\nInteresting numbers\n===================\n")
 	for label, q := range interestingNumbers {
 		cmd := exec.Command("/bin/sh", "-c", sparql(q))
@@ -207,6 +185,27 @@ func main() {
 
 	if *skipCirc {
 		return
+	}
+
+	circulationChecks := []CirculationMetric{
+		{
+			Name:      "patrons",
+			Bibliofil: "ls -1 /data/*laaner.*.txt | xargs cat | grep ln_nr | wc -l",
+			Prepared:  "cat /out/patrons.csv | wc -l",
+			Koha:      mysqlCount("SELECT count(*) FROM borrowers"),
+		},
+		{
+			Name:      "issues",
+			Bibliofil: `ls -1 /data/*exemp.*.txt | xargs cat | grep "ex_laanr |[^-]" | wc -l`,
+			Prepared:  "cat /out/issues.sql | grep INSERT | wc -l",
+			Koha:      mysqlCount("SELECT count(*) FROM issues"),
+		},
+		{
+			Name:      "holds",
+			Bibliofil: `ls -1 /data/*res.*.txt | xargs cat | grep res_titnr | wc -l`,
+			Prepared:  "cat /out/holds.sql | grep INSERT | wc -l",
+			Koha:      mysqlCount("SELECT count(*) FROM reserves"),
+		},
 	}
 
 	fmt.Fprintln(w, "\nVerifying patrons and circulation data\n======================================\n")
