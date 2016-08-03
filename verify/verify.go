@@ -173,6 +173,13 @@ func main() {
 			?p raw:publicationPlace ?rawPlaceLabel .
 			FILTER NOT EXISTS { ?p :hasPlaceOfPublication ?place . }
 		}`),
+		"Publications without mainTitle": withHost(`
+		PREFIX :    <http://%s:8005/ontology#>
+		SELECT COUNT(DISTINCT ?p)
+		WHERE {
+			?p a :Publication .
+			FILTER NOT EXISTS { ?p :mainTitle ?mainTitle . }
+		}`),
 	}
 
 	fmt.Fprintln(w, "\nInteresting numbers\n===================\n")
