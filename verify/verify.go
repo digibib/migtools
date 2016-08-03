@@ -74,6 +74,14 @@ func main() {
 			Elasticsearch: esCount("publication"),
 		},
 		{
+			Name:          "items",
+			Bibliofil:     `ls -1 /data/*exemp.*.txt | xargs cat | grep "ex_titnr" | wc -l`,
+			Prepared:      `cat /out/catalogue.mrc | grep -o 'p0301' | wc -l`,
+			Koha:          mysqlCount("SELECT COUNT(*) FROM items"),
+			Fuseki:        "",
+			Elasticsearch: "",
+		},
+		{
 			Name:          "works",
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
