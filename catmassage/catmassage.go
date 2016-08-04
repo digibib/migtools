@@ -288,6 +288,9 @@ func (m *Main) Run() error {
 						// 952$a branchcode and
 						// 952$b holding branch (the same for now, possibly depot)
 						bCode := getValue(scanner.Bytes())
+						if bCode == "" {
+							bCode = "none"
+						}
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
 
