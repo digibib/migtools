@@ -144,6 +144,8 @@ func main() {
 		all[res.Biblionumber] = append(all[res.Biblionumber], res)
 	}
 
+	fmt.Println("START TRANSACTION;")
+
 	for biblionr, _ := range all {
 		sort.Sort(all[biblionr])
 		for i, res := range all[biblionr] {
@@ -158,6 +160,7 @@ func main() {
 			}
 		}
 	}
+	fmt.Println("COMMIT;")
 
 }
 
