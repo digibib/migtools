@@ -100,6 +100,9 @@ func main() {
 	defer outNydalen.Close()
 
 	outIssues := mustCreate(filepath.Join(*outDir, "issues.sql"))
+	if err := fmt.Fprintln(outIssues, "START TRANSACTION;"); err != nil {
+		log.Fatal(err)
+	}
 	defer outIssues.Close()
 
 	vmarcF := mustOpen(*vmarc)
@@ -129,6 +132,9 @@ func main() {
 	branchF := mustCreate(filepath.Join(*outDir, "branches.sql"))
 	defer branchF.Close()
 	if err := templ.Execute(branchF, branchesToSlice(m.branches)); err != nil {
+		log.Fatal(err)
+	}
+	if err := fmt.Fprintln(outIssues, "COMMIT;"); err != nil {
 		log.Fatal(err)
 	}
 }
