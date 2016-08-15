@@ -420,6 +420,8 @@ func (m *Main) Run() error {
 
 					if !belongsToDFB(f) {
 						r.DataFields = append(r.DataFields, f)
+					} else {
+						onLoan = false // otherwise loans to deleted dfb items are written to issue.sql
 					}
 					f = marc.DField{Tag: "952"} // start from anew
 
