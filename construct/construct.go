@@ -167,7 +167,7 @@ WHERE {
 
 # tag: constructPublicationSerials
 PREFIX          : <{{.Services}}/ontology#>
-PREFIX       raw: <{{.Services}}/raw#>
+PREFIX       raw: <http://data.deichman.no/raw#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
