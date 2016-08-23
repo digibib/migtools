@@ -99,6 +99,33 @@ WHERE {
 	} LIMIT 1
 }
 
+# tag: constructWorkClassifications
+PREFIX          : <{{.Services}}/ontology#>
+PREFIX migration: <http://migration.deichman.no/>
+PREFIX       raw: <http://data.deichman.no/raw#>
+WITH <http://deichman.no/migration>
+CONSTRUCT {
+	<{{.URI}}> :hasCLassification [
+		:hasClassificationNumber ?dewey ;
+		:hasClassificationSource ?deweyEdition ;
+		a :ClassificationEntry ] .
+}
+WHERE {
+	SELECT DISTINCT ?dewey ?deweyEdition WHERE {
+		?pub :publicationOf <{{.URI}}> ;
+			migration:classification ?class .
+		?class raw:classificationNotation ?dewey .
+		OPTIONAL { ?class raw:classificationEdition ?classEdition .
+			       VALUES (?classEdition ?deweyEdition) {
+			              ("5"      <http://data.deichman.no/classificationSource#ddk5>)
+			              ("d5"     <http://data.deichman.no/classificationSource#ddk5>)
+			              ("d23"    <http://data.dsudeichman.no/classificationSource#ddk23>)
+			              ("23/nor" <http://data.deichman.no/classificationSource#ddk23>)
+			        }
+			    }
+	}
+}
+
 # tag: constructPublication
 PREFIX          : <{{.Services}}/ontology#>
 PREFIX      role: <http://data.deichman.no/role#>
@@ -269,6 +296,7 @@ getJob:
 				"constructWork",
 				"constructWorkMainEntryContribution",
 				"constructWorkContributions",
+				"constructWorkClassifications",
 			},
 			"person": {
 				"constructResource",
