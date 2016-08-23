@@ -246,6 +246,17 @@ func (m *Main) Run() error {
 			SubFields: marc.SubFields{marc.SubField{Code: "y", Value: v}},
 		})
 
+		// Populate 512a field (Age restriction) from 019s
+		age := firstVal(&r, "019", "s")
+		if age != "" {
+			r.DataFields = append(r.DataFields, marc.DField{
+				Tag:       "521",
+				Ind1:      " ",
+				Ind2:      " ",
+				SubFields: marc.SubFields{marc.SubField{Code: "a", Value: fmt.Sprintf("Aldersgrense %s", age)}},
+			})
+		}
+
 		// write MARCXML record, before merging in items
 		if err := encMARCXML.Encode(r); err != nil {
 			return err

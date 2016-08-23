@@ -114,6 +114,9 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <leader>     n   a22        4500</leader>
     <controlfield tag="001">1245593</controlfield>
     <controlfield tag="008">120228                a          00nob 2</controlfield>
+    <datafield tag="019" ind1=" " ind2=" ">
+        <subfield code="s">18</subfield>
+    </datafield>
     <datafield tag="100" ind1=" " ind2="0">
         <subfield code="a">Märtha Louise</subfield>
         <subfield code="c">prinsesse, datter av Harald V, konge av Norge</subfield>
@@ -127,6 +130,9 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
         <subfield code="a">Englenes hemmeligheter</subfield>
         <subfield code="b">deres natur, språk og hvordan du åpner opp for dem</subfield>
         <subfield code="c">Prinsesse Märtha Louise, Elisabeth Nordeng</subfield>
+    </datafield>
+    <datafield tag="521" ind1=" " ind2=" ">
+        <subfield code="a">Aldersgrense 18</subfield>
     </datafield>
     <datafield tag="942" ind1=" " ind2=" ">
         <subfield code="y">X</subfield>
@@ -226,6 +232,7 @@ const sampleVMARC = `
 *000     n
 *0011245593
 *008120228                a          00nob 2
+*019  $s18
 *100 0$aMärtha Louise$cprinsesse, datter av Harald V, konge av Norge$d1971-$jn.$1948.1055092$6923.148 z, 948.1055 x$316549700
 *24510$aEnglenes hemmeligheter$bderes natur, språk og hvordan du åpner opp for dem$cPrinsesse Märtha Louise, Elisabeth Nordeng
 ^
