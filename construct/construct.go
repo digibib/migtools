@@ -105,7 +105,7 @@ PREFIX migration: <http://migration.deichman.no/>
 PREFIX       raw: <http://data.deichman.no/raw#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
-	<{{.URI}}> :hasCLassification [
+	<{{.URI}}> :hasClassification [
 		:hasClassificationNumber ?dewey ;
 		:hasClassificationSource ?deweyEdition ;
 		a :ClassificationEntry ] .
