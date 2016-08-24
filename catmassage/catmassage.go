@@ -524,10 +524,11 @@ func removeSubfield(r *marc.Record, tag string, code string) {
 		if d.Tag == tag {
 			for i2, s := range d.SubFields {
 				if s.Code == code {
-					r.DataFields[i].SubFields = d.SubFields[:i2]
-					if len(r.DataFields[i].SubFields) == 0 {
-						// Remove tag entirely if empty
+					if len(r.DataFields[i].SubFields) == 1 {
+						// Remove tag entirely if it's the only subfieldd
 						r.DataFields = append(r.DataFields[:i], r.DataFields[i+1:]...)
+					} else {
+						r.DataFields[i].SubFields = append(d.SubFields[:i2], d.SubFields[i2+1:]...)
 					}
 					break
 				}
