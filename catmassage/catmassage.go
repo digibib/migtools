@@ -246,9 +246,11 @@ func (m *Main) Run() error {
 			SubFields: marc.SubFields{marc.SubField{Code: "y", Value: v}},
 		})
 
-		// Populate 512a field (Age restriction) from 019s
+		// Replace 521a field (Age restriction) with age restriction (integer) from 019s
 		age := firstVal(&r, "019", "s")
 		if age != "" {
+			removeSubfield(&r, "521", "a")
+
 			r.DataFields = append(r.DataFields, marc.DField{
 				Tag:       "521",
 				Ind1:      " ",
@@ -513,6 +515,23 @@ func remove952(r *marc.Record) {
 		if d.Tag == "952" {
 			r.DataFields = r.DataFields[:i]
 			break
+		}
+	}
+}
+
+func removeSubfield(r *marc.Record, tag string, code string) {
+	for i, d := range r.DataFields {
+		if d.Tag == tag {
+			for i2, s := range d.SubFields {
+				if s.Code == code {
+					r.DataFields[i].SubFields = d.SubFields[:i2]
+					if len(r.DataFields[i].SubFields) == 0 {
+						// Remove tag entirely if empty
+						r.DataFields = append(r.DataFields[:i], r.DataFields[i+1:]...)
+					}
+					break
+				}
+			}
 		}
 	}
 }

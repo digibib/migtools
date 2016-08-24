@@ -235,6 +235,7 @@ const sampleVMARC = `
 *019  $s18
 *100 0$aMärtha Louise$cprinsesse, datter av Harald V, konge av Norge$d1971-$jn.$1948.1055092$6923.148 z, 948.1055 x$316549700
 *24510$aEnglenes hemmeligheter$bderes natur, språk og hvordan du åpner opp for dem$cPrinsesse Märtha Louise, Elisabeth Nordeng
+*521  $aNoteThatShouldBeOverwrittenByAgeLimit
 ^
 *000     c
 *0010192529
