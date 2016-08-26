@@ -24,7 +24,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,10 +40,9 @@ type Main struct {
 	lmarc                     map[int]marc.Record
 	numWorkers                int
 	branches                  map[string]string
-	staffOnly                 bool
 }
 
-func newMain(laaner, lmarc, lnel io.Reader, nw int, staff bool) *Main {
+func newMain(laaner, lmarc, lnel io.Reader, nw int) *Main {
 	return &Main{
 		laanerIn:   laaner,
 		lmarcIn:    lmarc,
@@ -54,7 +52,6 @@ func newMain(laaner, lmarc, lnel io.Reader, nw int, staff bool) *Main {
 		lmarc:      make(map[int]marc.Record),
 		numWorkers: nw,
 		branches:   make(map[string]string),
-		staffOnly:  staff,
 	}
 }
 
@@ -242,11 +239,6 @@ func (m *Main) Run() {
 	for i := 0; i < m.numWorkers; i++ {
 		go func() {
 			for lnr := range jobs {
-				if m.staffOnly {
-					if i := sort.SearchStrings(staff, strconv.Itoa(lnr)); i < len(staff) && staff[i] != strconv.Itoa(lnr) {
-						continue
-					}
-				}
 				p := merge(m.lmarc[lnr], m.laaner[lnr], m.lnel[lnr])
 
 				if !strings.HasPrefix(p.surname, "!!") {
@@ -274,7 +266,6 @@ func main() {
 		laaner     = flag.String("laaner", "", "laaner dump")
 		lmarc      = flag.String("lmarc", "", "lmarc dump")
 		lnel       = flag.String("lnel", "", "lnel dump")
-		staffOnly  = flag.Bool("staff", false, "only prepare staff users")
 		numWorkers = flag.Int("n", 8, "number of concurrent workers")
 	)
 	outDir = flag.String("outdir", "", "output directory (default to current working directory)")
@@ -293,7 +284,7 @@ func main() {
 	lnelF := mustOpen(*lnel)
 	defer lnelF.Close()
 
-	m := newMain(laanerF, lmarcF, lnelF, *numWorkers, *staffOnly)
+	m := newMain(laanerF, lmarcF, lnelF, *numWorkers)
 	m.Run()
 
 	fns := template.FuncMap{
@@ -381,6 +372,4 @@ func init() {
 	log.SetFlags(0)
 	log.SetPrefix("patronmassage: ")
 
-	// sort list of staff, so it's searchable
-	sort.Strings(staff)
 }
