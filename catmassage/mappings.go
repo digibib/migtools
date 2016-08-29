@@ -13,34 +13,6 @@ VALUES
   ("28","28 dager","");
 `
 
-	aValuesSQL = `
-DELETE FROM authorised_values WHERE category IN ("WITHDRAWN", "LOST", "NOT_LOAN", "RESTRICTED", "DAMAGED");
-INSERT INTO authorised_values
-  (category, authorised_value, lib)
-VALUES
-  ("WITHDRAWN","1","trukket tilbake"),
-  ("DAMAGED","1","skadet"),
-  ("LOST","1","tapt"),
-  ("LOST","2","regnes som tapt"),
-  ("LOST","8","tapt, regning betalt"),
-  ("LOST","4","ikke på plass"),
-  ("LOST","5","påstått levert"),
-  ("LOST","6","påstått ikke lånt"),
-  ("LOST","7","borte i transport"),
-  ("LOST","9","vidvanke, registrert forsvunnet"),
-  ("LOST","10","retur eieravdeling (ved import)"),
-  ("LOST","11","til henteavdeling (ved import)"),
-  ("LOST","12","regning sendt"),
-  ("NOT_LOAN","-1","i bestilling"),
-  ("NOT_LOAN","2","ny"),
-  ("NOT_LOAN","3","til internt bruk"),
-  ("NOT_LOAN","4","til katalogisering"),
-  ("NOT_LOAN","5","vurderes kassert"),
-  ("NOT_LOAN","6","til retting"),
-  ("NOT_LOAN","7","til innbinding"),
-  ("RESTRICTED","1","begrenset tilgang"),
-  ("RESTRICTED","2","referanseverk");
-`
 	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber)
 SELECT borrowers.borrowernumber,
        {{.NumRes}},

@@ -12,7 +12,6 @@
 //   nydalen.marcxml:    catalogue with items belonging to "nydalen-læremidler"
 //   branches.sql:       holding branches extracted from items, to be inserted in MySQL before bulkmarcimport
 //   itypes.sql          item types to be inserted in MySQL before bulkmarcimport
-//   avalues.sql         authorized values (for status codes), to be inserted in MySQL before bulkmarcimport
 
 package main
 
@@ -117,9 +116,6 @@ func main() {
 	}
 
 	if err := ioutil.WriteFile(filepath.Join(*outDir, "itypes.sql"), []byte(itypesSQL), os.ModePerm); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(*outDir, "avalues.sql"), []byte(aValuesSQL), os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
