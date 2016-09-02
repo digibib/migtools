@@ -37,7 +37,7 @@ var outDir *string
 type Main struct {
 	laanerIn, lmarcIn, lnelIn io.Reader
 	laaner, lnel              map[int]map[string]string
-	lmarc                     map[int]marc.Record
+	lmarc                     map[int]*marc.Record
 	numWorkers                int
 	branches                  map[string]string
 }
@@ -49,7 +49,7 @@ func newMain(laaner, lmarc, lnel io.Reader, nw int) *Main {
 		lnelIn:     lnel,
 		laaner:     make(map[int]map[string]string),
 		lnel:       make(map[int]map[string]string),
-		lmarc:      make(map[int]marc.Record),
+		lmarc:      make(map[int]*marc.Record),
 		numWorkers: nw,
 		branches:   make(map[string]string),
 	}
@@ -62,7 +62,7 @@ func (m *Main) indexLmarc(wg *sync.WaitGroup) {
 			log.Fatal(err)
 			// TODO continue?
 		}
-		n, err := borrowernumber(&rec)
+		n, err := borrowernumber(rec)
 		if err != nil {
 			log.Println(err)
 			rec.DumpTo(os.Stderr, true)

@@ -221,7 +221,7 @@ func (m *Main) Run() error {
 			continue
 		}
 
-		tnr := titleNumber(&r)
+		tnr := titleNumber(r)
 		tnrInt, err := strconv.Atoi(tnr)
 		if err != nil {
 			log.Println("Title number not an integer:", tnr)
@@ -231,7 +231,7 @@ func (m *Main) Run() error {
 		}
 
 		// Add 942 field (default item type)
-		v := firstVal(&r, "019", "b")
+		v := firstVal(r, "019", "b")
 		if v == "" {
 			v = "X"
 		}
@@ -243,9 +243,9 @@ func (m *Main) Run() error {
 		})
 
 		// Replace 521a field (Age restriction) with age restriction (integer) from 019s
-		age := firstVal(&r, "019", "s")
+		age := firstVal(r, "019", "s")
 		if age != "" {
-			removeSubfield(&r, "521", "a")
+			removeSubfield(r, "521", "a")
 
 			r.DataFields = append(r.DataFields, marc.DField{
 				Tag:       "521",
@@ -395,20 +395,20 @@ func (m *Main) Run() error {
 
 					// 952$o full call number (hyllesignatur)
 					// TODO factour out this string concatination
-					callnumber := firstVal(&r, "090", "a")
-					if v := firstVal(&r, "090", "b"); v != "" {
+					callnumber := firstVal(r, "090", "a")
+					if v := firstVal(r, "090", "b"); v != "" {
 						if len(callnumber) > 0 {
 							callnumber += " "
 						}
 						callnumber += v
 					}
-					if v := firstVal(&r, "090", "c"); v != "" {
+					if v := firstVal(r, "090", "c"); v != "" {
 						if len(callnumber) > 0 {
 							callnumber += " "
 						}
 						callnumber += v
 					}
-					if v := firstVal(&r, "090", "d"); v != "" {
+					if v := firstVal(r, "090", "d"); v != "" {
 						if len(callnumber) > 0 {
 							callnumber += " "
 						}
@@ -419,7 +419,7 @@ func (m *Main) Run() error {
 					}
 
 					// Add item type (used for issuing rule) based on item type from record:
-					recType := firstVal(&r, "942", "y")
+					recType := firstVal(r, "942", "y")
 					iType := "28" // default, 28 days checkout time
 					if rgx14days.MatchString(recType) {
 						iType = "14" // 14 days checkout time for some formats (CDs/DVDs)
@@ -451,19 +451,19 @@ func (m *Main) Run() error {
 		}
 
 		// strip items beloning to bjornholt-læremidler and nydalen-læremidler
-		fbjl, fnyl := splitItems(&r)
+		fbjl, fnyl := splitItems(r)
 
 		// encode marc record with items to be migrated to Koha
 		if err = encMARC.Encode(r); err != nil {
 			log.Println(err)
-			log.Println("bibliofil titellnummer: ", titleNumber(&r))
+			log.Println("bibliofil titellnummer: ", titleNumber(r))
 			// TODO fail on IO errors:
 			// return err
 		}
 
 		// encode records with bjornholt-læremidler items, if any
 		if len(fbjl) > 0 {
-			remove952(&r) // remove all items
+			remove952(r) // remove all items
 			r.DataFields = append(r.DataFields, fbjl...)
 			if err := encFbjl.Encode(r); err != nil {
 				return err
@@ -471,7 +471,7 @@ func (m *Main) Run() error {
 		}
 		// encode records with nydalen-læremidler items, if any
 		if len(fnyl) > 0 {
-			remove952(&r) // remove any items from bjornholt-læremidler
+			remove952(r) // remove any items from bjornholt-læremidler
 			r.DataFields = append(r.DataFields, fnyl...)
 			if err := encFnyl.Encode(r); err != nil {
 				return err

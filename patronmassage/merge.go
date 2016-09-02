@@ -137,7 +137,7 @@ func onlyDigits(s string) string {
 	return r.String()
 }
 
-func merge(lmarc marc.Record, laaner, lnel map[string]string) patron {
+func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 	// defaults:
 	p := patron{
 		privacy:    1,

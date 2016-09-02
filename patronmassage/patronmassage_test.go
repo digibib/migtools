@@ -120,7 +120,7 @@ func mustParseKeyVal(s string) map[string]string {
 	return rec
 }
 
-func mustParseLmarc(s string) marc.Record {
+func mustParseLmarc(s string) *marc.Record {
 	enc := marc.NewDecoder(bytes.NewBufferString(s), marc.LineMARC)
 	recs, err := enc.DecodeAll()
 	if err != nil {

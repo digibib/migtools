@@ -57,10 +57,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		stripDueDate(&rec)
-		removeItems(&rec)
-		stripStatusCodes(&rec)
-		setItemType(&rec)
+		stripDueDate(rec)
+		removeItems(rec)
+		stripStatusCodes(rec)
+		setItemType(rec)
 		if err := enc.Encode(rec); err != nil {
 			log.Fatal(err)
 		}

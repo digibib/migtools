@@ -10,8 +10,8 @@ import (
 	"github.com/boutros/marc"
 )
 
-func parseRecords(t *testing.T, r io.Reader, format marc.Format) []marc.Record {
-	var res []marc.Record
+func parseRecords(t *testing.T, r io.Reader, format marc.Format) []*marc.Record {
+	var res []*marc.Record
 	dec := marc.NewDecoder(r, format)
 	for r, err := dec.Decode(); err != io.EOF; r, err = dec.Decode() {
 		if err != nil {
@@ -45,7 +45,7 @@ func TestMerge(t *testing.T) {
 			t.Fatalf("got:\n%+v\nwant:%+v", r, want[i])
 		}
 		// verify that the full marcxml and marc records without items are equal, when the 952 fields are removed:
-		remove952(&want[i])
+		remove952(want[i])
 		if !gotNoItems[i].Eq(want[i]) {
 			t.Fatalf("got:\n%+v\nwant:%+v", gotNoItems[i], want[i])
 		}
@@ -551,7 +551,7 @@ const recordToSplit = `
 
 func TestSplitItems(t *testing.T) {
 	r := parseRecords(t, bytes.NewBufferString(recordToSplit), marc.MARCXML)[0]
-	fbjl, fnyl := splitItems(&r)
+	fbjl, fnyl := splitItems(r)
 
 	if len(fbjl) != 1 || len(fnyl) != 2 {
 		t.Errorf("bjønrholt/nydalen items, got %d/%d; want 1/2", len(fbjl), len(fnyl))
