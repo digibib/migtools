@@ -5,6 +5,18 @@ import (
 	"github.com/knakk/kbp/marc/normarc"
 )
 
+// value -> label mappings
+var (
+	audienceMapping = map[string]string{
+		"aa": "0–2 år",
+		"a":  "3–5 år",
+		"b":  "6-8 år",
+		"bu": "9-10 år",
+		"u":  "11-12 år",
+		"mu": "13-15 år",
+	}
+)
+
 func copyCtrlFieldPos(from, to *marc.Record, tag marc.ControlTag, pos ...int) {
 	f := marc.NewControlField(tag)
 	for _, p := range pos {
@@ -117,7 +129,22 @@ func Transform(from *marc.Record) *marc.Record {
 	// Verkstype 	*336 $a (label), tag repeteres hvis flere verkstyper
 	// Medietype 	*337 $a (label), tag repeteres hvis flere medietyper
 	// Format	*338 $a (label), tag repeteres hvis flere formater
+
 	// Målgruppe 	*385 $a (label), tag repeteres hvis flere målgrupper
+	if cf, ok := from.ControlField(marc.Tag008); ok {
+		v := cf.GetPos(normarc.PosMålgruppe, 1)
+		label := ""
+		switch v {
+		case "a":
+			label = "Voksne"
+		case "j":
+			label = "Barn og ungdom"
+		}
+		if label != "" {
+			to.AddDataField(marc.NewDataField(marc.Tag385).Add('a', label))
+		}
+	}
+
 	// Tilrettelegging for bestemte brukergrupper	*385 $a (label), tag repeteres hvis flere grupper
 
 	// Aldersgrense		*521 $a
