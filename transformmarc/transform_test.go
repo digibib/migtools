@@ -75,7 +75,11 @@ var tests = []struct {
 *245  $aOstani, ako mozhjesh. Zamini, ako trjabva.
 *260  $aSofia$bPerseus$c2015
 *521  $a42
-*73301
+*650  $aBygdesamfunn
+*650  $aDøden
+*650  $aOppvekst
+*650  $aFortellinger
+*650  $aSorg
 ^`,
 	},
 }

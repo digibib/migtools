@@ -35,6 +35,19 @@ func copyDataFieldSubfieldsTo(from, to *marc.Record, fromTag, toTag marc.DataTag
 	}
 }
 
+func uniqueSubfields(r *marc.Record, tag marc.DataTag, code rune) (res []string) {
+	matches := make(map[string]bool)
+	for _, df := range r.DataFields(tag) {
+		for _, v := range df.Subfield(code) {
+			matches[v] = true
+		}
+	}
+	for k, _ := range matches {
+		res = append(res, k)
+	}
+	return res
+}
+
 func Transform(from *marc.Record) *marc.Record {
 	to := marc.NewRecord()
 
@@ -115,9 +128,19 @@ func Transform(from *marc.Record) *marc.Record {
 	}
 
 	// Emne		*650 $a (label), tag repeteres hvis flere emner
-	copyDataFieldSubfieldsTo(from, to, marc.Tag690, marc.Tag650, 'a', 'x')
-
 	// Emne med specification *650 $a (label) + $q (specification), tag repeteres hvis flere emner
+
+	// TODO: Fra *600, *610, *611, *630, *650, *651, *691, *692, *694
+
+	// Fra *690:
+	copyDataFieldSubfieldsTo(from, to, marc.Tag690, marc.Tag650, 'a', 'q')
+	for _, v := range uniqueSubfields(from, marc.Tag690, 'x') {
+		to.AddDataField(
+			marc.NewDataField(marc.Tag650).Add('a', v))
+	}
+
+	//copyDataFieldOneSubfieldsTo(from, to, marc.Tag690, marc.Tag650, 'x', 'a')
+
 	// Sjanger	*655 $a (label), tag repeteres hvis flere sjangrer
 	// Litterær form	*655 $a (label), tag repeteres hvis flere sjangrer
 
