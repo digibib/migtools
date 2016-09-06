@@ -46,7 +46,7 @@ var tests = []struct {
 *00842536                 a          10bul
 *015  $a10561242$bBibliofilID
 *015  $bDFB
-*019  $dR$bl$s42
+*019  $dR$bl$s42$aaa
 *020  $a978-619-161-070-9
 *041  $hnor
 *0820 $223/nor$zh

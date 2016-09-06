@@ -131,6 +131,7 @@ func Transform(from *marc.Record) *marc.Record {
 	// Format	*338 $a (label), tag repeteres hvis flere formater
 
 	// Målgruppe 	*385 $a (label), tag repeteres hvis flere målgrupper
+	// Fra *008 pos 22:
 	if cf, ok := from.ControlField(marc.Tag008); ok {
 		v := cf.GetPos(normarc.PosMålgruppe, 1)
 		label := ""
@@ -142,6 +143,13 @@ func Transform(from *marc.Record) *marc.Record {
 		}
 		if label != "" {
 			to.AddDataField(marc.NewDataField(marc.Tag385).Add('a', label))
+		}
+	}
+	// Fra *019 $a:
+	for _, v := range uniqueSubfields(from, marc.Tag019, 'a') {
+		if label := audienceMapping[v]; label != "" {
+			to.AddDataField(
+				marc.NewDataField(marc.Tag385).Add('a', label))
 		}
 	}
 
