@@ -211,7 +211,7 @@ func (m *Main) Run() error {
 		}
 
 		switch r.Leader[5:6] {
-		case "f", "e", "i", "l", "t", "m", "d":
+		case "f", "e", "i", "l", "t", "m", "d", "b":
 			// ignorer fjernlån/innlån/depot/slettede poster
 			continue
 		}
