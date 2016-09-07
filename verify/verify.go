@@ -156,7 +156,7 @@ func main() {
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p a :Publication
-			FILTER NOT EXISTS { ?p :mediaType ?mediaType }
+			FILTER NOT EXISTS { ?p :hasMediaType ?mediaType }
 		}`),
 		"Publications without format": withHost(`
 		PREFIX : <http://%s:8005/ontology#>
