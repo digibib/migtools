@@ -75,6 +75,7 @@ WHERE {
 			role:author
 			role:editor
 			role:lyricist
+			role:adaptor
 		}
 		FILTER NOT EXISTS { ?pub :mainEntry ?agent }
 	}
@@ -159,6 +160,7 @@ WHERE {
 			role:contributor
 			role:coreographer
 			role:publisher
+			role:adaptor
 		}
 	}
 }
