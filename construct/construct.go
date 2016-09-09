@@ -32,7 +32,7 @@ CONSTRUCT WHERE {
 }
 
 # tag: constructWork
-PREFIX : <{{.Services}}/ontology#>
+PREFIX : <http://data.deichman.no/ontology#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
 	<{{.URI}}> a :Work ;
@@ -54,7 +54,7 @@ WHERE {
 }
 
 # tag: constructWorkContributions
-PREFIX     : <{{.Services}}/ontology#>
+PREFIX     : <http://data.deichman.no/ontology#>
 PREFIX role: <http://data.deichman.no/role#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
@@ -82,7 +82,7 @@ WHERE {
 }
 
 # tag: constructWorkMainEntryContribution
-PREFIX     : <{{.Services}}/ontology#>
+PREFIX     : <http://data.deichman.no/ontology#>
 PREFIX role: <http://data.deichman.no/role#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
@@ -101,7 +101,7 @@ WHERE {
 }
 
 # tag: constructWorkClassifications
-PREFIX          : <{{.Services}}/ontology#>
+PREFIX          : <http://data.deichman.no/ontology#>
 PREFIX migration: <http://migration.deichman.no/>
 PREFIX       raw: <http://data.deichman.no/raw#>
 WITH <http://deichman.no/migration>
@@ -128,7 +128,7 @@ WHERE {
 }
 
 # tag: constructPublication
-PREFIX          : <{{.Services}}/ontology#>
+PREFIX          : <http://data.deichman.no/ontology#>
 PREFIX      role: <http://data.deichman.no/role#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
@@ -166,7 +166,7 @@ WHERE {
 }
 
 # tag: constructPublicationContributions
-PREFIX     : <{{.Services}}/ontology#>
+PREFIX     : <http://data.deichman.no/ontology#>
 PREFIX role: <http://data.deichman.no/role#>
 WITH <http://deichman.no/migration>
 CONSTRUCT {
@@ -195,7 +195,7 @@ WHERE {
 }
 
 # tag: constructPublicationSerials
-PREFIX          : <{{.Services}}/ontology#>
+PREFIX          : <http://data.deichman.no/ontology#>
 PREFIX       raw: <http://data.deichman.no/raw#>
 PREFIX migration: <http://migration.deichman.no/>
 WITH <http://deichman.no/migration>
@@ -320,7 +320,7 @@ getJob:
 		var triples []rdf.Triple
 		for _, query := range typeQueries[job.Type] {
 			q, err := queryBank.Prepare(
-				query, struct{ URI, Services string }{job.URI.String(), m.services})
+				query, struct{ URI string }{job.URI.String()})
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -365,7 +365,7 @@ func stripGyearTimeZone(ts []rdf.Triple) {
 }
 
 func (m *Main) addToQueue(resource string) {
-	resourceType := fmt.Sprintf("%s/ontology#%s", m.services, strings.Title(resource))
+	resourceType := fmt.Sprintf("http://data.deichman.no/ontology#%s", strings.Title(resource))
 
 	q, err := queryBank.Prepare(
 		"selectResourceURIs",
