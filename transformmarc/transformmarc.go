@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/knakk/kbp/marc"
 	"github.com/knakk/kbp/marc/normarc"
 )
@@ -8,12 +10,43 @@ import (
 // value -> label mappings
 var (
 	audienceMapping = map[string]string{
-		"aa": "0–2 år",
-		"a":  "3–5 år",
+		"aa": "0-2 år",
+		"a":  "3-5 år",
 		"b":  "6-8 år",
 		"bu": "9-10 år",
 		"u":  "11-12 år",
 		"mu": "13-15 år",
+	}
+
+	formatMapping = map[string]string{
+		"ee": "DVD",
+		"ef": "Blu-ray",
+		"eg": "3D-film",
+		"ed": "VHS",
+		"dc": "CD",
+		"dz": "MP3-CD",
+		"da": "Vinylplate",
+		"db": "Kassett",
+		"gd": "CD-ROM",
+		"gc": "DVD-ROM",
+		"dd": "Digibok",
+		"de": "Digikort",
+		"gt": "DAISY",
+		"nb": "eBokBib",
+		"na": "Nedlastbar fil",
+		"mn": "Nintendo DS-spill",
+		"mo": "Nintendo Wii-spill",
+		"ma": "PC-spill",
+		"mb": "Playstation 2-spill",
+		"mc": "Playstation 3-spill",
+		"me": "Playstation 4-spill",
+		"mk": "Xbox One-spill",
+		"mj": "Xbox 360-spill",
+		"a":  "Kart",
+		"fd": "Dias",
+		"ic": "Mikrofiche",
+		"ib": "Mikrofilm",
+		"fm": "Plansje",
 	}
 )
 
@@ -128,7 +161,17 @@ func Transform(from *marc.Record) *marc.Record {
 
 	// Verkstype 	*336 $a (label), tag repeteres hvis flere verkstyper
 	// Medietype 	*337 $a (label), tag repeteres hvis flere medietyper
+
 	// Format	*338 $a (label), tag repeteres hvis flere formater
+	// TODO formater: Brettspill, Kortspill
+	for _, codes := range uniqueSubfields(from, marc.Tag019, 'b') {
+		for _, code := range strings.Split(codes, ",") {
+			if label, ok := formatMapping[code]; ok {
+				to.AddDataField(
+					marc.NewDataField(marc.Tag338).Add('a', label))
+			}
+		}
+	}
 
 	// Målgruppe 	*385 $a (label), tag repeteres hvis flere målgrupper
 	// Fra *008 pos 22:

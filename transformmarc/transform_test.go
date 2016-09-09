@@ -46,7 +46,7 @@ var tests = []struct {
 *00842536                 a          10bul
 *015  $a10561242$bBibliofilID
 *015  $bDFB
-*019  $dR$bl$s42$aaa
+*019  $dR$bl$s42$aaa$bda,db
 *020  $a978-619-161-070-9
 *041  $hnor
 *0820 $223/nor$zh
@@ -74,7 +74,10 @@ var tests = []struct {
 *100  $aFlatland, Helga
 *245  $aOstani, ako mozhjesh. Zamini, ako trjabva.
 *260  $aSofia$bPerseus$c2015
+*338  $aVinylplate
+*338  $aKassett
 *385  $aVoksne
+*385  $a0-2 år
 *521  $a42
 *650  $aBygdesamfunn
 *650  $aDøden
