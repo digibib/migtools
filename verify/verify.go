@@ -48,17 +48,9 @@ func init() {
 	log.SetFlags(0)
 }
 
-var host = "localhost"
-
-func withHost(s string) string {
-	return fmt.Sprintf(s, host)
-}
-
 func main() {
-	hostFlag := flag.String("h", "localhost", "namespace host (for RDF ontology)")
 	skipCirc := flag.Bool("nocirc", true, "skip circulation verificaitons")
 	flag.Parse()
-	host = *hostFlag
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 1, '\t', 0)
@@ -70,7 +62,7 @@ func main() {
 			Bibliofil:     `ls -1 /data/*vmarc.*.txt | xargs cat | grep "*001" | wc -l`,
 			Prepared:      `cat /out/catalogue.mrc | grep -o $'\035' | wc -l`,
 			Koha:          mysqlCount("SELECT COUNT(*) FROM biblioitems"),
-			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Publication> }")), // TODO use static deichman namespace when ready
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Publication> }"),
 			Elasticsearch: esCount("publication"),
 		},
 		{
@@ -86,7 +78,7 @@ func main() {
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Work>" | wc -l`,
 			Koha:          "",
-			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Work> }")), // TODO use static deichman namespace when ready
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Work> }"),
 			Elasticsearch: esCount("work"),
 		},
 		{
@@ -94,7 +86,7 @@ func main() {
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Person>" | wc -l`,
 			Koha:          "",
-			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Person> }")), // TODO use static deichman namespace when ready
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Person> }"),
 			Elasticsearch: esCount("person"),
 		},
 		{
@@ -102,7 +94,7 @@ func main() {
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Subject>" | wc -l`,
 			Koha:          "",
-			Fuseki:        sparql(withHost("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://%s:8005/ontology#Subject> }")), // TODO use static deichman namespace when ready
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Subject> }"),
 			Elasticsearch: esCount("subject"),
 		},
 	}
@@ -132,16 +124,16 @@ func main() {
 	fmt.Fprintln(w)
 
 	interestingNumbers := map[string]string{
-		"Publications not belonging to any work": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
+		"Publications not belonging to any work": `
+		PREFIX : <http://data.deichman.no/ontology#>
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p a :Publication .
 			MINUS { ?p :publicationOf ?w .
 				    ?w a :Work }
-		}`),
-		"Works with two MainEntry contributions": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
+		}`,
+		"Works with two MainEntry contributions": `
+		PREFIX : <http://data.deichman.no/ontology#>
 		SELECT COUNT(DISTINCT ?w)
 		WHERE {
 			?w a :Work ;
@@ -150,36 +142,36 @@ func main() {
 			?w :contributor ?bnode2 .
 			?bnode2 a :MainEntry .
 			FILTER(?bnode1 != ?bnode2)
-		}`),
-		"Publications without mediatype": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
+		}`,
+		"Publications without mediatype": `
+		PREFIX : <http://data.deichman.no/ontology#>
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p a :Publication
 			FILTER NOT EXISTS { ?p :hasMediaType ?mediaType }
-		}`),
-		"Publications without format": withHost(`
-		PREFIX : <http://%s:8005/ontology#>
+		}`,
+		"Publications without format": `
+		PREFIX : <http://data.deichman.no/ontology#>
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p a :Publication
 			FILTER NOT EXISTS { ?p :format ?format }
-		}`),
-		"Publication with raw:publicationPlace but not conneted to place of publication": withHost(`
-		PREFIX :    <http://%s:8005/ontology#>
+		}`,
+		"Publication with raw:publicationPlace but not conneted to place of publication": `
+		PREFIX :    <http://data.deichman.no/ontology#>
 		PREFIX raw: <http://data.deichman.no/raw#>
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p raw:publicationPlace ?rawPlaceLabel .
 			FILTER NOT EXISTS { ?p :hasPlaceOfPublication ?place . }
-		}`),
-		"Publications without mainTitle": withHost(`
-		PREFIX :    <http://%s:8005/ontology#>
+		}`,
+		"Publications without mainTitle": `
+		PREFIX :    <http://data.deichman.no/ontology#>
 		SELECT COUNT(DISTINCT ?p)
 		WHERE {
 			?p a :Publication .
 			FILTER NOT EXISTS { ?p :mainTitle ?mainTitle . }
-		}`),
+		}`,
 	}
 
 	fmt.Fprintln(w, "\nInteresting numbers\n===================\n")
