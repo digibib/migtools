@@ -146,7 +146,7 @@ func (m *Main) Run() {
 			if bLabel, ok := branchCodes[p.branchcode]; ok {
 				m.branches[p.branchcode] = bLabel
 			} else {
-				m.branches[p.branchcode] = "MISSING LABEL FOR BRANCH: " + p.branchcode
+				p.branchcode = "ukjent"
 			}
 
 			catCode, ok := categoryCodes[p.categorycode]
