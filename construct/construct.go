@@ -315,6 +315,9 @@ getJob:
 			"place": {
 				"constructResource",
 			},
+			"corporation": {
+				"constructResource",
+			},
 		}
 
 		var triples []rdf.Triple
