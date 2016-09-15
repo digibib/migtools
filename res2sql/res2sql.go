@@ -44,6 +44,53 @@ WHERE barcode='{{.Barcode}}' AND borrowers.userid='{{.Borrowernumber}}' AND bibl
 `
 )
 
+var (
+	branchOldToNew = map[string]string{
+		"fbjh": "fbje",
+		"fbji": "fbje",
+		"fbli": "fbol",
+		"fgyi": "fgry",
+		"fnti": "fnor",
+		"fsti": "fsto",
+		"ftoi": "ftor",
+		"hbar": "hbib",
+		"hbbr": "hbib",
+		"hutl": "hbib",
+		"hvkr": "hbib",
+		"hvlr": "hbib",
+		"hvmu": "hbib",
+		"hvur": "hbib",
+		"info": "hbib",
+	}
+
+	branchCodes = map[string]string{
+		"api":    "Internt API",
+		"hbib":   "Hovedbiblioteket",
+		"fbje":   "Bjerke",
+		"fbjo":   "Bjørnholt",
+		"fbol":   "Bøler",
+		"ffur":   "Furuset",
+		"fgab":   "Biblo Tøyen",
+		"fgam":   "Tøyen",
+		"fgry":   "Grünerløkka",
+		"fhol":   "Holmlia",
+		"flam":   "Lambertseter",
+		"fmaj":   "Majorstuen",
+		"fnor":   "Nordtvet",
+		"fnyd":   "Nydalen",
+		"fopp":   "Oppsal",
+		"frik":   "Rikshospitalet",
+		"frmm":   "Rommen",
+		"froa":   "Røa",
+		"from":   "Romsås",
+		"fsme":   "Smestad",
+		"fsto":   "Stovner",
+		"ftor":   "Torshov",
+		"hsko":   "Skoletjenesten",
+		"ukjent": "Ukjent avdeling",
+	}
+)
+
 func init() {
 	log.SetFlags(0)
 	log.SetPrefix("res2sql: ")
@@ -108,6 +155,14 @@ func main() {
 			log.Println("missing biblionumber")
 			log.Printf("skipping record: %+v", rec)
 			continue
+		}
+
+		// avdeling
+		if newBranch, ok := branchOldToNew[res.Branchcode]; ok {
+			res.Branchcode = newBranch
+		}
+		if _, ok := branchCodes[res.Branchcode]; !ok {
+			res.Branchcode = "ukjent"
 		}
 
 		// status
