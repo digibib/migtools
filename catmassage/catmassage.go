@@ -304,19 +304,21 @@ func (m *Main) Run() error {
 						// 952$b holding branch (the same for now, possibly depot)
 						bCode := getValue(scanner.Bytes())
 						if bCode == "" {
-							bCode = "none"
+							bCode = "ukjent"
 						}
-						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
-						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
-
 						// Keep track of which branchcodes that are found, ignoring dfb/fbjl/fnyl
 						if bCode != "dfb" && bCode != "fbjl" && bCode != "fnyl" {
-							if bLabel, ok := branchCodes[bCode]; ok {
-								m.branches[bCode] = bLabel
-							} else {
-								m.branches[bCode] = "MISSING LABEL FOR BRANCH: " + bCode
+							if newBranch, ok := branchOldToNew[bCode]; ok {
+								bCode = newBranch
 							}
+							if _, ok := branchCodes[bCode]; !ok {
+								bCode = "ukjent"
+							}
+							m.branches[bCode] = branchCodes[bCode]
 						}
+
+						f.SubFields = append(f.SubFields, marc.SubField{Code: "a", Value: bCode})
+						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
 					case "ex_plass":
 						// 952$c shelving location (authorized value? TODO check)
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "c", Value: getValue(scanner.Bytes())})

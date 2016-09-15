@@ -52,12 +52,12 @@ func TestMerge(t *testing.T) {
 	}
 
 	wantBranchCodes := map[string]string{
-		"fbol": "Bøler",
-		"fnyd": "Nydalen",
-		"hutl": "Hovedbiblioteket",
-		"ffur": "Furuset",
-		"fmaj": "Majorstua",
-		"xyz":  "MISSING LABEL FOR BRANCH: xyz",
+		"fbol":   "Bøler",
+		"fnyd":   "Nydalen",
+		"hbib":   "Hovedbiblioteket",
+		"ffur":   "Furuset",
+		"fmaj":   "Majorstuen",
+		"ukjent": "Ukjent avdeling",
 	}
 	if !reflect.DeepEqual(wantBranchCodes, m.branches) {
 		t.Fatalf("got:\n%v\nwant:\n%v", wantBranchCodes, m.branches)
@@ -91,8 +91,8 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">1</subfield>
         <subfield code="p">03010379371001</subfield>
-        <subfield code="a">xyz</subfield>
-        <subfield code="b">xyz</subfield>
+        <subfield code="a">ukjent</subfield>
+        <subfield code="b">ukjent</subfield>
         <subfield code="c">m</subfield>
         <subfield code="l">8</subfield>
         <subfield code="o">641.3 Gra</subfield>
@@ -101,8 +101,8 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">2</subfield>
         <subfield code="p">03010379371002</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
+        <subfield code="a">hbib</subfield>
+        <subfield code="b">hbib</subfield>
         <subfield code="c">m</subfield>
         <subfield code="1">11</subfield>
         <subfield code="l">14</subfield>
@@ -140,24 +140,24 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">1</subfield>
         <subfield code="p">03011245593001</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
+        <subfield code="a">hbib</subfield>
+        <subfield code="b">hbib</subfield>
         <subfield code="l">23</subfield>
         <subfield code="y">28</subfield>
     </datafield>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">2</subfield>
         <subfield code="p">03011245593002</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
+        <subfield code="a">hbib</subfield>
+        <subfield code="b">hbib</subfield>
         <subfield code="l">24</subfield>
         <subfield code="y">28</subfield>
     </datafield>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">3</subfield>
         <subfield code="p">03011245593003</subfield>
-        <subfield code="a">hutl</subfield>
-        <subfield code="b">hutl</subfield>
+        <subfield code="a">hbib</subfield>
+        <subfield code="b">hbib</subfield>
         <subfield code="l">14</subfield>
         <subfield code="y">28</subfield>
     </datafield>
