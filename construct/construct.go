@@ -411,7 +411,7 @@ func (m *Main) Run(workers int) {
 	for i := 0; i < workers; i++ {
 		go m.processResources()
 	}
-	for _, r := range []string{"person", "work", "serial", "genre", "subject", "place", "publication"} {
+	for _, r := range []string{"person", "corporation", "work", "serial", "genre", "subject", "place", "publication"} {
 		m.addToQueue(r)
 	}
 	close(m.jobs)
