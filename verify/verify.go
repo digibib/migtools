@@ -106,7 +106,7 @@ func main() {
 			Elasticsearch: esCount("genre"),
 		},
 		{
-			Name:          "place",
+			Name:          "places",
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Place>" | wc -l`,
 			Koha:          "",
@@ -114,7 +114,7 @@ func main() {
 			Elasticsearch: esCount("place"),
 		},
 		{
-			Name:          "corporation",
+			Name:          "corporations",
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Corporation>" | wc -l`,
 			Koha:          "",
@@ -122,7 +122,7 @@ func main() {
 			Elasticsearch: esCount("corporation"),
 		},
 		{
-			Name:          "serial",
+			Name:          "serials",
 			Bibliofil:     "",
 			Prepared:      `cat /out/resources.nt | grep -o "#Serial>" | wc -l`,
 			Koha:          "",
