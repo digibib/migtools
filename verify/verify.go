@@ -97,6 +97,38 @@ func main() {
 			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Subject> }"),
 			Elasticsearch: esCount("subject"),
 		},
+		{
+			Name:          "genres",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Genre>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Genre> }"),
+			Elasticsearch: esCount("genre"),
+		},
+		{
+			Name:          "place",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Place>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Place> }"),
+			Elasticsearch: esCount("place"),
+		},
+		{
+			Name:          "corporation",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Corporation>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Corporation> }"),
+			Elasticsearch: esCount("corporation"),
+		},
+		{
+			Name:          "serial",
+			Bibliofil:     "",
+			Prepared:      `cat /out/resources.nt | grep -o "#Serial>" | wc -l`,
+			Koha:          "",
+			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Serial> }"),
+			Elasticsearch: esCount("serial"),
+		},
 	}
 	fmt.Fprintln(w, "Verifying resources\n===================\n")
 	fmt.Fprintln(w, "\tBibliofil\tPrepared\tKoha\tFuseki\tElasticsearch")
