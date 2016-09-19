@@ -10,7 +10,7 @@ VALUES
   ("API","API user","S","2999-12-31",\N,\N),
   ("AUTO","Automat","S","2999-12-31",\N,\N),
   ("B","Barn","C","2999-12-31",15,0),
-  ("BHG","Barnegage","I","2999-12-31",\N,\N),
+  ("BHG","Barnehage","I","2999-12-31",\N,\N),
   ("BIB","Bibliotek","I","2999-12-31",\N,\N),
   ("I","Institusjon","I","2999-12-31",\N,\N),
   ("KL","Klasselåner","P","2999-12-31",\N,\N),
