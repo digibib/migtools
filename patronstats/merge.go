@@ -48,6 +48,9 @@ type patron struct {
 	TEMP_res_transport     string
 	TEMP_pur_transport     string
 	TEMP_fvarsel_transport string
+	TEMP_huskeliste        bool
+	TEMP_familie           bool
+	TEMP_interesse         bool
 }
 
 // splitZipCity splits string into zip code and city. If there is no
@@ -206,6 +209,12 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 			} else {
 				p.privacy = 2
 			}
+		case "500":
+			p.TEMP_interesse = true
+		case "501", "503":
+			p.TEMP_huskeliste = true
+		case "510", "511":
+			p.TEMP_familie = true
 		case "600": // Nasjonalt lånenummer
 			p.cardnumber = firstSub(f.SubFields, "a")
 			// 600$k = 1 hvis tilknyttet NL, 0 hvis ikke

@@ -215,6 +215,26 @@ var selections = []struct {
 		"Lånere med epostadresse som har lånt de siste 36 månedene",
 		func(p patron) bool { return p.email != "" && isActiveLastNMonths(p.TEMP_sistelaan, 36) },
 	},
+	{
+		"Lånere med epostadresse som har brukt huskeliste",
+		func(p patron) bool { return p.email != "" && p.TEMP_huskeliste },
+	},
+	{
+		"Lånere med epostadresse som har lagret historikk",
+		func(p patron) bool { return p.email != "" && p.privacy == 0 },
+	},
+	{
+		"Lånere med epostadresse som har brukt famileMappaMi",
+		func(p patron) bool { return p.email != "" && p.TEMP_familie },
+	},
+	{
+		"Lånere med epostadresse som har brukt interesseområder",
+		func(p patron) bool { return p.email != "" && p.TEMP_interesse },
+	},
+	{
+		"Lånere med epostadresse",
+		func(p patron) bool { return p.email != "" },
+	},
 }
 
 func isActive(s string) bool {
