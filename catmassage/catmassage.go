@@ -429,10 +429,10 @@ func (m *Main) Run() error {
 					// TODO ikke til utlån? eller skal de ligge i Not for loan-statuskodene?
 					f.SubFields = append(f.SubFields, marc.SubField{Code: "y", Value: iType})
 
-					if !belongsToDFB(f) {
+					if !belongsTo(f, []string{"dfb", "fnyl", "fbjl"}) {
 						r.DataFields = append(r.DataFields, f)
 					} else {
-						onLoan = false // otherwise loans to deleted dfb items are written to issue.sql
+						onLoan = false // otherwise loans to deleted dfb/fnyl/fbjl items are written to issue.sql
 					}
 					f = marc.DField{Tag: "952"} // start from anew
 
@@ -567,10 +567,12 @@ func firstVal(r *marc.Record, tag string, code string) string {
 	return ""
 }
 
-func belongsToDFB(f marc.DField) bool {
+func belongsTo(f marc.DField, branchcodes []string) bool {
 	for _, s := range f.SubFields {
-		if s.Code == "a" && s.Value == "dfb" {
-			return true
+		for _, branch := range branchcodes {
+			if s.Code == "a" && s.Value == branch {
+				return true
+			}
 		}
 	}
 	return false
