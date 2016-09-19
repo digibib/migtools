@@ -16,9 +16,8 @@ VALUES
   ("KL","Klasselåner","P","2999-12-31",\N,\N),
   ("MDL","Midlertidig bosatt","A","2999-12-31",\N,\N),
   ("PAS","Pasient","A", "2999-12-31",\N,\N),
-  ("SKO","Grunnskole","I", "2999-12-31",\N,\N),
-  ("V","Voksen","A","2999-12-31",\N,16),
-  ("VGS","Videregående skole","I","2999-12-31",\N,\N);`
+  ("SKO","Skole","I", "2999-12-31",\N,\N),
+  ("V","Voksen","A","2999-12-31",\N,16);`
 
 	fnrTemplSQL = `
 INSERT IGNORE INTO borrower_attributes (borrowernumber, code, attribute)
@@ -40,6 +39,7 @@ WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
 		"i":   "I",
 		"EU":  "I",
 		"sko": "SKO",
+		"VGS": "SKO",
 		"OV":  "I",
 		"U03": "BIB",
 		"G02": "BIB",
