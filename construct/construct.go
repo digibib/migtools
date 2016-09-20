@@ -318,6 +318,9 @@ getJob:
 			"corporation": {
 				"constructResource",
 			},
+			"compositionType": {
+				"constructResource",
+			},
 		}
 
 		var triples []rdf.Triple
@@ -414,7 +417,7 @@ func (m *Main) Run(workers int) {
 	for i := 0; i < workers; i++ {
 		go m.processResources()
 	}
-	for _, r := range []string{"person", "corporation", "work", "serial", "genre", "subject", "place", "publication"} {
+	for _, r := range []string{"person", "corporation", "work", "serial", "genre", "subject", "place", "publication", "compositionType"} {
 		m.addToQueue(r)
 	}
 	close(m.jobs)
