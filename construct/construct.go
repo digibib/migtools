@@ -50,6 +50,7 @@ WHERE {
 				   :subject
 				   :mediaType
 				   :publicationYear
+				   :hasCompositionType
 				 }
 }
 
