@@ -284,7 +284,7 @@ func (m *Main) Run() error {
 			v = "FILM"
 		} else if strings.Contains(v, "la") {
 			v = "EBOK"
-		} else if strings.Contains(v, "j") {
+		} else if strings.Contains(v, "j") || v == "sm" {
 			v = "PERIODIKA"
 		} else if rgxBok.MatchString(v) {
 			v = "BOK"
