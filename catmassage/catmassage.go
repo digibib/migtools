@@ -3,6 +3,7 @@
 // input:
 //   vmarc: database export from Bibliofil
 //   emarc: database export from Bibliofil
+//   exemp: database export from Bibliofil
 //
 // output:
 //   catalogue.mrc:      massaged catalogue with items information in MARC field 952, to be imported with bulcmarkimport
@@ -40,7 +41,11 @@ var (
 
 	prefixTitnr = []byte("ex_titnr |")
 
-	rgx14days = regexp.MustCompile(`(?i)DG|ED|EE|EF|EG`)
+	rgxLydbok = regexp.MustCompile(`di|dj`)
+	rgxSpill  = regexp.MustCompile(`ma|mb|mc|me|mj|mk|mn|mo`)
+	rgxFilm   = regexp.MustCompile(`ed|ee|ef|eg`)
+	rgxBok    = regexp.MustCompile(`l|ab|fm`)
+	rgxRealia = regexp.MustCompile(`h|fd`)
 	issueTmpl = template.Must(template.New("issue").Parse(issuesSQLtmp))
 )
 
@@ -48,6 +53,7 @@ var (
 type Main struct {
 	vmarc        io.Reader
 	exemp        io.ReadSeeker
+	emarc        io.Reader
 	outMerged    io.Writer
 	outNoItems   io.Writer
 	outIssues    io.Writer
@@ -74,6 +80,7 @@ func main() {
 	var (
 		vmarc  = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
 		exemp  = flag.String("exemp", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.exemp.20141020-085129.txt", "exemplar database key-val")
+		emarc  = flag.String("emarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.emarc.20141020-085154.txt", "exemplar database in line-marc")
 		limit  = flag.Int("limit", -1, "stop after n records")
 		skip   = flag.Int("skip", 0, "skip first n records")
 		outDir = flag.String("outdir", "", "output directory (default to current working directory)")
@@ -110,7 +117,10 @@ func main() {
 	exempF := mustOpen(*exemp)
 	defer exempF.Close()
 
-	m := newMain(vmarcF, exempF, outMerged, outNoItems, outBjornholt, outNydalen, outIssues, *limit, *skip)
+	emarcF := mustOpen(*emarc)
+	defer emarcF.Close()
+
+	m := newMain(vmarcF, exempF, emarcF, outMerged, outNoItems, outBjornholt, outNydalen, outIssues, *limit, *skip)
 	if err := m.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -135,10 +145,11 @@ func main() {
 	}
 }
 
-func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged, outNoItems, outB, outN, outIssues io.Writer, limit int, skip int) *Main {
+func newMain(vmarc io.Reader, exemp io.ReadSeeker, emarc io.Reader, outMerged, outNoItems, outB, outN, outIssues io.Writer, limit int, skip int) *Main {
 	return &Main{
 		vmarc:        vmarc,
 		exemp:        exemp,
+		emarc:        emarc,
 		outMerged:    outMerged,
 		outNoItems:   outNoItems,
 		outBjornholt: outB,
@@ -151,6 +162,35 @@ func newMain(vmarc io.Reader, exemp io.ReadSeeker, outMerged, outNoItems, outB, 
 }
 
 func (m *Main) Run() error {
+
+	// Index information about hurtiglån, dagslån from emarc:
+	laan1dag := make(map[string]bool)
+	laan7dag := make(map[string]bool)
+	laan14dag := make(map[string]bool)
+
+	emarcDec := marc.NewDecoder(m.emarc, marc.LineMARC)
+	for rec, err := emarcDec.Decode(); err != io.EOF; rec, err = emarcDec.Decode() {
+		if err != nil {
+			log.Fatal(err)
+		}
+		tnr, err := strconv.Atoi(titleNumber(rec))
+		if err != nil {
+			continue
+		}
+		exnr, err := strconv.Atoi(copyNumber(rec))
+		if err != nil {
+			continue
+		}
+		barcode := fmt.Sprintf("0301%07d%03d", tnr, exnr)
+		switch firstVal(rec, "250", "a") {
+		case "Hurtiglån 14 dager":
+			laan14dag[barcode] = true
+		case "Hurtiglån 7 dager":
+			laan7dag[barcode] = true
+		case "Dagslån":
+			laan1dag[barcode] = true
+		}
+	}
 
 	// Create an index of the exemplar database by title number.
 	// The DB is sorted by title number and copy number (ex_titnr and ex_exnr),
@@ -230,10 +270,32 @@ func (m *Main) Run() error {
 			continue
 		}
 
-		// Add 942 field (default item type)
-		v := firstVal(r, "019", "b")
+		// Add 942 field (record level item type)
+		v := strings.TrimSpace(strings.ToLower(firstVal(r, "019", "b")))
 		if v == "" {
-			v = "X"
+			v = "UKJENT"
+		} else if strings.Contains(v, "dh") {
+			v = "SPRAAKKURS"
+		} else if rgxLydbok.MatchString(v) {
+			v = "LYDBOK"
+		} else if strings.Contains(v, "dg") {
+			v = "MUSIKK"
+		} else if rgxSpill.MatchString(v) {
+			v = "SPILL"
+		} else if rgxFilm.MatchString(v) {
+			v = "FILM"
+		} else if strings.Contains(v, "la") {
+			v = "EBOK"
+		} else if v == "j" {
+			v = "PERIODIKA"
+		} else if rgxBok.MatchString(v) {
+			v = "BOK"
+		} else if v == "c" {
+			v = "NOTER"
+		} else if v == "a" {
+			v = "KART"
+		} else if rgxRealia.MatchString(v) {
+			v = "REALIA"
 		}
 		r.DataFields = append(r.DataFields, marc.DField{
 			Tag:       "942",
@@ -271,6 +333,7 @@ func (m *Main) Run() error {
 			f := marc.DField{Tag: "952"}
 			var issue Issue
 			onLoan := false
+			barcode := ""
 
 			// parse exemplar information
 		findExemplars:
@@ -296,7 +359,7 @@ func (m *Main) Run() error {
 							log.Println("Title number: ", tnr, "Copy number not a number:", getValue(scanner.Bytes()))
 							continue
 						}
-						barcode := fmt.Sprintf("0301%07d%03d", tnrInt, c)
+						barcode = fmt.Sprintf("0301%07d%03d", tnrInt, c)
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "p", Value: barcode})
 						issue.Barcode = barcode
 					case "ex_avd":
@@ -366,11 +429,12 @@ func (m *Main) Run() error {
 					case "ex_laanr":
 						issue.BibliofilBorrowerNr = strings.TrimPrefix(getValue(scanner.Bytes()), "-")
 					case "ex_laantid":
+						// 28/14/7 , men ikke hurtiglånsinfo
 					case "ex_forfall":
 						//952$q due date (if checked out)
 						if v := getValue(scanner.Bytes()); v != "00/00/0000" {
 							if len(v) != 10 {
-								log.Println("Unknown date format (ex_laantid):", v)
+								log.Println("Unknown date format (ex_forfall):", v)
 								break
 							}
 							forfall := fmt.Sprintf("%s-%s-%s", v[6:10], v[3:5], v[0:2])
@@ -421,12 +485,14 @@ func (m *Main) Run() error {
 					}
 
 					// Add item type (used for issuing rule) based on item type from record:
-					recType := firstVal(r, "942", "y")
-					iType := "28" // default, 28 days checkout time
-					if rgx14days.MatchString(recType) {
-						iType = "14" // 14 days checkout time for some formats (CDs/DVDs)
+					iType := firstVal(r, "942", "y")
+					if laan7dag[barcode] {
+						iType = "UKESLAAN"
+					} else if laan14dag[barcode] {
+						iType = "TOUKESLAAN"
+					} else if laan1dag[barcode] {
+						iType = "DAGSLAAN"
 					}
-					// TODO ikke til utlån? eller skal de ligge i Not for loan-statuskodene?
 					f.SubFields = append(f.SubFields, marc.SubField{Code: "y", Value: iType})
 
 					if !belongsTo(f, []string{"dfb", "fnyl", "fbjl"}) {
@@ -540,6 +606,21 @@ func removeSubfield(r *marc.Record, tag string, code string) {
 func titleNumber(r *marc.Record) string {
 	for _, f := range r.CtrlFields {
 		if f.Tag == "001" {
+			i := 0
+			for ; i < len(f.Value); i++ {
+				if f.Value[i] != '0' {
+					break
+				}
+			}
+			return f.Value[i:]
+		}
+	}
+	return ""
+}
+
+func copyNumber(r *marc.Record) string {
+	for _, f := range r.CtrlFields {
+		if f.Tag == "002" {
 			i := 0
 			for ; i < len(f.Value); i++ {
 				if f.Value[i] != '0' {

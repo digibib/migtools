@@ -8,9 +8,22 @@ INSERT IGNORE INTO itemtypes
   (itemtype, description, notforloan)
 VALUES
   ("0","Ikke til utlån","1"),
-  ("1","Dagslån",""),
-  ("14","14 dager",""),
-  ("28","28 dager","");
+  ("DAGSLAAN","Dagslån",""),
+  ("UKESLAAN","Hurtiglån (7 dager)",""),
+  ("TOUKESLAAN","Hurtiglån (14 dager)",""),
+  ("SPRAAKKURS","Språkkurs",""),
+  ("LYDBOK","Lydbok",""),
+  ("MUSIKK","Musikkopptak",""),
+  ("SPILL","Spill",""),
+  ("FILM","Film",""),
+  ("EBOK","E-bok",""),
+  ("PERIODIKA","Periodika",""),
+  ("BOK","Bok",""),
+  ("NOTER","Noter",""),
+  ("KART","Kart",""),
+  ("REALIA","Realia",""),
+  ("UKJENT", "Ukjent", ""),
+  ("","","");
 `
 
 	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber)
