@@ -296,6 +296,9 @@ func (m *Main) Run() error {
 			v = "KART"
 		} else if rgxRealia.MatchString(v) {
 			v = "REALIA"
+		} else {
+			log.Printf("ingen regel for materialtype: %q\n", v)
+			v = "UKJENT"
 		}
 		r.DataFields = append(r.DataFields, marc.DField{
 			Tag:       "942",
