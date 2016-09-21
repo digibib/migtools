@@ -272,9 +272,7 @@ func (m *Main) Run() error {
 
 		// Add 942 field (record level item type)
 		v := strings.TrimSpace(strings.ToLower(firstVal(r, "019", "b")))
-		if v == "" {
-			v = "UKJENT"
-		} else if strings.Contains(v, "dh") {
+		if strings.Contains(v, "dh") {
 			v = "SPRAAKKURS"
 		} else if rgxLydbok.MatchString(v) {
 			v = "LYDBOK"
@@ -286,7 +284,7 @@ func (m *Main) Run() error {
 			v = "FILM"
 		} else if strings.Contains(v, "la") {
 			v = "EBOK"
-		} else if v == "j" {
+		} else if strings.Contains(v, "j") {
 			v = "PERIODIKA"
 		} else if rgxBok.MatchString(v) {
 			v = "BOK"
@@ -297,7 +295,6 @@ func (m *Main) Run() error {
 		} else if rgxRealia.MatchString(v) {
 			v = "REALIA"
 		} else {
-			log.Printf("ingen regel for materialtype: %q\n", v)
 			v = "UKJENT"
 		}
 		r.DataFields = append(r.DataFields, marc.DField{
