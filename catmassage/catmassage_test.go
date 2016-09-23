@@ -54,7 +54,7 @@ func TestMerge(t *testing.T) {
 	wantBranchCodes := map[string]string{
 		"fbol":   "Bøler",
 		"fnyd":   "Nydalen",
-		"hbib":   "Hovedbiblioteket",
+		"hutl":   "Hovedbiblioteket, voksen",
 		"ffur":   "Furuset",
 		"fmaj":   "Majorstuen",
 		"ukjent": "Ukjent avdeling",
@@ -104,8 +104,8 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">2</subfield>
         <subfield code="p">03010379371002</subfield>
-        <subfield code="a">hbib</subfield>
-        <subfield code="b">hbib</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
         <subfield code="c">m</subfield>
         <subfield code="1">11</subfield>
         <subfield code="l">14</subfield>
@@ -144,24 +144,24 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">1</subfield>
         <subfield code="p">03011245593001</subfield>
-        <subfield code="a">hbib</subfield>
-        <subfield code="b">hbib</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
         <subfield code="l">23</subfield>
         <subfield code="y">BOK</subfield>
     </datafield>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">2</subfield>
         <subfield code="p">03011245593002</subfield>
-        <subfield code="a">hbib</subfield>
-        <subfield code="b">hbib</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
         <subfield code="l">24</subfield>
         <subfield code="y">BOK</subfield>
     </datafield>
     <datafield tag="952" ind1=" " ind2=" ">
         <subfield code="t">3</subfield>
         <subfield code="p">03011245593003</subfield>
-        <subfield code="a">hbib</subfield>
-        <subfield code="b">hbib</subfield>
+        <subfield code="a">hutl</subfield>
+        <subfield code="b">hutl</subfield>
         <subfield code="l">14</subfield>
         <subfield code="y">DAGSLAAN</subfield>
     </datafield>
