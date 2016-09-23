@@ -53,19 +53,19 @@ var (
 		"fnti": "fnor",
 		"fsti": "fsto",
 		"ftoi": "ftor",
-		"hbar": "hbib",
-		"hbbr": "hbib",
-		"hutl": "hbib",
-		"hvkr": "hbib",
-		"hvlr": "hbib",
-		"hvmu": "hbib",
-		"hvur": "hbib",
-		"info": "hbib",
+		"hbbr": "hbar",
+		"hvkr": "hutl",
+		"hvlr": "hutl",
+		"hvur": "hutl",
+		"info": "hutl",
 	}
 
+	// branchcode to label
 	branchCodes = map[string]string{
 		"api":    "Internt API",
-		"hbib":   "Hovedbiblioteket",
+		"hutl":   "Hovedbiblioteket, voksen",
+		"hbar":   "Hovedbiblioteket, barn",
+		"hvmu":   "Hovedbiblioteket, musikk",
 		"fbje":   "Bjerke",
 		"fbjo":   "Bjørnholt",
 		"fbol":   "Bøler",
