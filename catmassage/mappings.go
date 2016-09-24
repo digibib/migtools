@@ -26,11 +26,12 @@ VALUES
   ("","","");
 `
 
-	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber)
+	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber, branchcode)
 SELECT borrowers.borrowernumber,
        {{.NumRes}},
        CONCAT('{{.DueDate}}', ' 23:59:00'),
-       items.itemnumber
+       items.itemnumber,
+       '{{.Branch}}'
 FROM borrowers
 INNER JOIN items ON items.barcode = '{{.Barcode}}'
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
@@ -82,6 +83,8 @@ VALUES
 		"hvlr": "hutl",
 		"hvur": "hutl",
 		"info": "hutl",
+		// TODO missing mappings from automat-branchcodes
+		// needed for correct issue branch
 	}
 
 	// branchcode to label

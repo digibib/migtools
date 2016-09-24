@@ -66,6 +66,7 @@ type Main struct {
 
 type Issue struct {
 	NumRes              int
+	Branch              string
 	DueDate             string
 	Barcode             string
 	BibliofilBorrowerNr string
@@ -163,10 +164,12 @@ func newMain(vmarc io.Reader, exemp io.ReadSeeker, emarc io.Reader, outMerged, o
 
 func (m *Main) Run() error {
 
-	// Index information about hurtiglån, dagslån from emarc:
+	// Index information  by barcode from emarc:
+	// hurtiglån, dagslån + issuing branch
 	laan1dag := make(map[string]bool)
 	laan7dag := make(map[string]bool)
 	laan14dag := make(map[string]bool)
+	issuebranch := make(map[string]string)
 
 	emarcDec := marc.NewDecoder(m.emarc, marc.LineMARC)
 	for rec, err := emarcDec.Decode(); err != io.EOF; rec, err = emarcDec.Decode() {
@@ -189,6 +192,9 @@ func (m *Main) Run() error {
 			laan7dag[barcode] = true
 		case "Dagslån":
 			laan1dag[barcode] = true
+		}
+		if branch := firstVal(rec, "100", "c"); branch != "" {
+			issuebranch[barcode] = branch
 		}
 	}
 
@@ -503,6 +509,13 @@ func (m *Main) Run() error {
 					f = marc.DField{Tag: "952"} // start from anew
 
 					if onLoan {
+						issue.Branch = issuebranch[issue.Barcode]
+						if newBranch, ok := branchOldToNew[issue.Branch]; ok {
+							issue.Branch = newBranch
+						}
+						if _, ok := branchCodes[issue.Branch]; !ok {
+							issue.Branch = "ukjent"
+						}
 						// write CSV row to loan.csv
 						if err := issueTmpl.Execute(issueWriter, issue); err != nil {
 							return err
