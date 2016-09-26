@@ -504,7 +504,7 @@ func (m *Main) Run() error {
 					}
 					f.SubFields = append(f.SubFields, marc.SubField{Code: "y", Value: iType})
 
-					if !belongsTo(f, []string{"dfb", "fnyl", "fbjl"}) {
+					if !belongsTo(f, []string{"dfb", "fnyl", "fbjl", "fsor", "fxxx", "idep", "innk", "fbju"}) {
 						r.DataFields = append(r.DataFields, f)
 					} else {
 						onLoan = false // otherwise loans to deleted dfb/fnyl/fbjl items are written to issue.sql
