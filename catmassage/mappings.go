@@ -83,6 +83,7 @@ VALUES
 		"hvlr": "hutl",
 		"hvur": "hutl",
 		"info": "hutl",
+		"fstl": "fsto",
 		// Automat-avdelinger:
 		"fboa": "fbol",
 		"ffua": "ffur",
