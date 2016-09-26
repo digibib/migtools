@@ -140,12 +140,15 @@ func (m *Main) Run() {
 	if _, err := outMsgPrefs.WriteString(msgPrefsInit); err != nil {
 		log.Fatal(err)
 	}
+
+	missingBranches := make(map[string]int)
 	go func() {
 		for p := range patrons {
 
 			if bLabel, ok := branchCodes[p.branchcode]; ok {
 				m.branches[p.branchcode] = bLabel
 			} else {
+				missingBranches[p.branchcode]++
 				p.branchcode = "ukjent"
 			}
 
@@ -259,13 +262,18 @@ func (m *Main) Run() {
 	close(jobs)
 	wg.Wait()
 	close(patrons)
+
+	fmt.Println("Unmapped branch counts:")
+	for branch, count := range missingBranches {
+		fmt.Printf("%s\t%d\n", branch, count)
+	}
 }
 
 func main() {
 	var (
-		laaner     = flag.String("laaner", "", "laaner dump")
-		lmarc      = flag.String("lmarc", "", "lmarc dump")
-		lnel       = flag.String("lnel", "", "lnel dump")
+		laaner     = flag.String("laaner", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.laaner.20160923-145314.txt", "laaner dump")
+		lmarc      = flag.String("lmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.lmarc.20160923-145331.txt", "lmarc dump")
+		lnel       = flag.String("lnel", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.lnel.20160923-145327.txt", "lnel dump")
 		numWorkers = flag.Int("n", 8, "number of concurrent workers")
 	)
 	outDir = flag.String("outdir", "", "output directory (default to current working directory)")

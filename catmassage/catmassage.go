@@ -171,6 +171,8 @@ func (m *Main) Run() error {
 	laan14dag := make(map[string]bool)
 	issuebranch := make(map[string]string)
 
+	missingBranch := make(map[string]int)
+
 	emarcDec := marc.NewDecoder(m.emarc, marc.LineMARC)
 	for rec, err := emarcDec.Decode(); err != io.EOF; rec, err = emarcDec.Decode() {
 		if err != nil {
@@ -381,6 +383,7 @@ func (m *Main) Run() error {
 								bCode = newBranch
 							}
 							if _, ok := branchCodes[bCode]; !ok {
+								missingBranch[bCode]++
 								bCode = "ukjent"
 							}
 							m.branches[bCode] = branchCodes[bCode]
@@ -562,6 +565,12 @@ func (m *Main) Run() error {
 		if c == m.limit {
 			break
 		}
+	}
+
+	// Unmapped branch report
+	fmt.Println("Unmapped branch counts:")
+	for branch, count := range missingBranch {
+		fmt.Printf("%s\t%d\n", branch, count)
 	}
 
 	// flush all buffered writers

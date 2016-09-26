@@ -58,6 +58,23 @@ var (
 		"hvlr": "hutl",
 		"hvur": "hutl",
 		"info": "hutl",
+		// Automat-avdelinger:
+		"fboa": "fbol",
+		"ffua": "ffur",
+		"fgaa": "fgam",
+		"fgra": "fgry",
+		"fgrb": "frgy",
+		"fhoa": "fhol",
+		"flaa": "flam",
+		"flan": "flam",
+		"fmaa": "fmaj",
+		"fnya": "fnyd",
+		"fopa": "fopp",
+		"frma": "frmm",
+		"frob": "froa",
+		"ftoa": "ftor",
+		"hvma": "hvmu",
+		"hvua": "hutl",
 	}
 
 	// branchcode to label
