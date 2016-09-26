@@ -93,6 +93,7 @@ func TestPatronMerge(t *testing.T) {
 		branchcode:             "fmaj",
 		categorycode:           "v", // mapped to "V" in Main.Run()
 		TEMP_personnr:          "02031145555",
+		TEMP_pinhashed:         "9a925d1cebb962b1629f75f2540bbde0",
 		TEMP_nl:                true,
 		TEMP_res_transport:     "epost",
 		TEMP_pur_transport:     "epost",

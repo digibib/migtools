@@ -11,6 +11,7 @@
 //   branches.sql      branches to be inserted into MySQL
 //   ext.sql           extended patron attributes (fnr) to be inserted into MySQL
 //   msgprefs.sql      message preferenses to be inserted into MySQL
+//   borrowersync.sql  rows to be innserted into borrower_sync in MySQL
 
 package main
 
@@ -141,6 +142,10 @@ func (m *Main) Run() {
 		log.Fatal(err)
 	}
 
+	bsyncTempl := template.Must(template.New("bsync").Parse(borrwersyncTemplSQL))
+	outBranchSync := mustCreate(filepath.Join(*outDir, "borrowersync.sql"))
+	defer outBranchSync.Close()
+
 	missingBranches := make(map[string]int)
 	go func() {
 		for p := range patrons {
@@ -171,6 +176,18 @@ func (m *Main) Run() {
 				}{
 					BibliofilBorrowerNr: p.userid,
 					Fnr:                 p.TEMP_personnr,
+				}); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if p.TEMP_pinhashed != "" {
+				if err := bsyncTempl.Execute(outBranchSync, struct {
+					HashedPIN           string
+					BibliofilBorrowerNr string
+				}{
+					HashedPIN:           p.TEMP_pinhashed,
+					BibliofilBorrowerNr: p.userid,
 				}); err != nil {
 					log.Fatal(err)
 				}

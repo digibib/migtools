@@ -27,6 +27,17 @@ SELECT borrowers.borrowernumber,
 FROM borrowers
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
 `
+
+	borrwersyncTemplSQL = `
+INSERT IGNORE INTO borrower_sync (borrowernumber, synctype, sync, syncstatus, hashed_pin)
+SELECT borrowers.borrowernumber,
+       'norwegianpatrondb',
+       1,
+       'synced'
+       '{{.HashedPIN}}'
+FROM borrowers
+WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
+`
 	categoryCodes = map[string]string{
 		"v":   "V",
 		"NB":  "BIB",

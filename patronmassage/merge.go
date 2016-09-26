@@ -93,6 +93,7 @@ type patron struct {
 	// but we need the information for further processing or populating borrower-connected tables.
 	TEMP_sistelaan         string
 	TEMP_personnr          string
+	TEMP_pinhashed         string
 	TEMP_nl                bool
 	TEMP_hjemmebibnr       string
 	TEMP_res_transport     string
@@ -255,6 +256,9 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 					log.Fatal(err)
 				}
 				p.password = string(pin)
+			}
+			if v := firstSub(f.SubFields, "z"); v != "" {
+				p.TEMP_pinhashed = v
 			}
 		case "270": // transporttype reserveringsbrev
 			p.TEMP_res_transport = strings.ToLower(firstSub(f.SubFields, "a"))
