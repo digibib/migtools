@@ -33,7 +33,7 @@ INSERT IGNORE INTO borrower_sync (borrowernumber, synctype, sync, syncstatus, ha
 SELECT borrowers.borrowernumber,
        'norwegianpatrondb',
        1,
-       'synced'
+       'synced',
        '{{.HashedPIN}}'
 FROM borrowers
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
