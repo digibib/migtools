@@ -7,7 +7,6 @@ var (
 INSERT IGNORE INTO itemtypes
   (itemtype, description, notforloan)
 VALUES
-  ("0","Ikke til utlån","1"),
   ("DAGSLAAN","Dagslån",""),
   ("UKESLAAN","Hurtiglån (7 dager)",""),
   ("TOUKESLAAN","Hurtiglån (14 dager)",""),
