@@ -5,24 +5,23 @@ import "github.com/boutros/marc"
 var (
 	itypesSQL = `
 INSERT IGNORE INTO itemtypes
-  (itemtype, description, notforloan)
+  (itemtype, description)
 VALUES
-  ("DAGSLAAN","Dagslån",""),
-  ("UKESLAAN","Hurtiglån (7 dager)",""),
-  ("TOUKESLAAN","Hurtiglån (14 dager)",""),
-  ("SPRAAKKURS","Språkkurs",""),
-  ("LYDBOK","Lydbok",""),
-  ("MUSIKK","Musikkopptak",""),
-  ("SPILL","Spill",""),
-  ("FILM","Film",""),
-  ("EBOK","E-bok",""),
-  ("PERIODIKA","Periodika",""),
-  ("BOK","Bok",""),
-  ("NOTER","Noter",""),
-  ("KART","Kart",""),
-  ("REALIA","Realia",""),
-  ("UKJENT", "Ukjent", ""),
-  ("","","");
+  ("DAGSLAAN","Dagslån"),
+  ("UKESLAAN","Hurtiglån (7 dager)"),
+  ("TOUKESLAAN","Hurtiglån (14 dager)"),
+  ("SPRAAKKURS","Språkkurs"),
+  ("LYDBOK","Lydbok"),
+  ("MUSIKK","Musikkopptak"),
+  ("SPILL","Spill"),
+  ("FILM","Film"),
+  ("EBOK","E-bok"),
+  ("PERIODIKA","Periodika"),
+  ("BOK","Bok"),
+  ("NOTER","Noter"),
+  ("KART","Kart"),
+  ("REALIA","Realia"),
+  ("UKJENT", "Ukjent"),
 `
 
 	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber, branchcode)
