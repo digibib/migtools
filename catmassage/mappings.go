@@ -21,7 +21,7 @@ VALUES
   ("NOTER","Noter"),
   ("KART","Kart"),
   ("REALIA","Realia"),
-  ("UKJENT", "Ukjent"),
+  ("UKJENT", "Ukjent");
 `
 
 	issuesSQLtmp = `INSERT IGNORE INTO issues (borrowernumber, renewals, date_due, itemnumber, branchcode)
