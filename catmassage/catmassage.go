@@ -393,7 +393,16 @@ func (m *Main) Run() error {
 						f.SubFields = append(f.SubFields, marc.SubField{Code: "b", Value: bCode})
 					case "ex_plass":
 						// 952$c shelving location (authorized value? TODO check)
-						f.SubFields = append(f.SubFields, marc.SubField{Code: "c", Value: getValue(scanner.Bytes())})
+						v := getValue(scanner.Bytes())
+						switch firstVal(r, "092", "a") {
+						case "MILJØHYLLA":
+							v = "Miljøhylla"
+						case "VINDU MOT SHANGHAI":
+							v = "Shanghai"
+						case "TEGNSPRÅK":
+							v = "Tegnspråk"
+						}
+						f.SubFields = append(f.SubFields, marc.SubField{Code: "c", Value: v})
 					case "ex_hylle":
 					case "ex_note":
 						// 952$z public note

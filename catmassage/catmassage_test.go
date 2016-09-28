@@ -77,6 +77,9 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
     <datafield tag="019" ind1=" " ind2=" ">
         <subfield code="b">l</subfield>
     </datafield>
+    <datafield tag="092" ind1=" " ind2=" ">
+        <subfield code="a">MILJØHYLLA</subfield>
+    </datafield>
     <datafield tag="100" ind1=" " ind2="0">
         <subfield code="a">Grahl-Nielsen, Thora</subfield>
         <subfield code="d">1901-</subfield>
@@ -96,7 +99,7 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
         <subfield code="p">03010379371001</subfield>
         <subfield code="a">ukjent</subfield>
         <subfield code="b">ukjent</subfield>
-        <subfield code="c">m</subfield>
+        <subfield code="c">Miljøhylla</subfield>
         <subfield code="l">8</subfield>
         <subfield code="o">641.3 Gra</subfield>
         <subfield code="y">BOK</subfield>
@@ -106,7 +109,7 @@ const wantMARCXML = `<?xml version="1.0" encoding="UTF-8"?>
         <subfield code="p">03010379371002</subfield>
         <subfield code="a">hutl</subfield>
         <subfield code="b">hutl</subfield>
-        <subfield code="c">m</subfield>
+        <subfield code="c">Miljøhylla</subfield>
         <subfield code="1">11</subfield>
         <subfield code="l">14</subfield>
         <subfield code="o">641.3 Gra</subfield>
@@ -233,6 +236,7 @@ const sampleVMARC = `
 *0010379371
 *019  $bl
 *008920916                a          0 nob
+*092  $aMILJØHYLLA
 *090  $c641.3$dGra
 *100 0$aGrahl-Nielsen, Thora$d1901-$jn.$326452400
 *24510$aUgress er også mat$bopskrifter og aktuelle surrogater av ville vekster$c[Av] Thora Grahl-Nielsen [og] Astrid Karlsen
