@@ -28,6 +28,14 @@ FROM borrowers
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
 `
 
+	meråpentTemplSQL = `
+INSERT IGNORE INTO borrower_attributes (borrowernumber, code, attribute)
+SELECT borrowers.borrowernumber,
+       'dooraccess',
+       '{{.Code}}'
+FROM borrowers
+WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
+`
 	borrwersyncTemplSQL = `
 INSERT IGNORE INTO borrower_sync (borrowernumber, synctype, sync, syncstatus, hashed_pin)
 SELECT borrowers.borrowernumber,

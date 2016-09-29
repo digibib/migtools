@@ -9,7 +9,7 @@
 //   patrons.csv:      patrons to be imported into Koha MySQL borrowers table
 //   categories.sql    patron categories to be inserted into MySQL
 //   branches.sql      branches to be inserted into MySQL
-//   ext.sql           extended patron attributes (fnr) to be inserted into MySQL
+//   ext.sql           extended patron attributes (fnr, dooraccess) to be inserted into MySQL
 //   msgprefs.sql      message preferenses to be inserted into MySQL
 //   borrowersync.sql  rows to be innserted into borrower_sync in MySQL
 
@@ -134,7 +134,8 @@ func (m *Main) Run() {
 	enc := csv.NewWriter(patronsF)
 	defer enc.Flush()
 	outExt := mustCreate(filepath.Join(*outDir, "ext.sql"))
-	extTempl := template.Must(template.New("ext").Parse(fnrTemplSQL))
+	fnrTempl := template.Must(template.New("fnr").Parse(fnrTemplSQL))
+	doorTempl := template.Must(template.New("fnr").Parse(meråpentTemplSQL))
 	defer outExt.Close()
 	outMsgPrefs := mustCreate(filepath.Join(*outDir, "msgprefs.sql"))
 	defer outMsgPrefs.Close()
@@ -170,7 +171,7 @@ func (m *Main) Run() {
 			}
 
 			if p.TEMP_personnr != "" {
-				if err := extTempl.Execute(outExt, struct {
+				if err := fnrTempl.Execute(outExt, struct {
 					Fnr                 string
 					BibliofilBorrowerNr string
 				}{
@@ -187,6 +188,29 @@ func (m *Main) Run() {
 					BibliofilBorrowerNr string
 				}{
 					HashedPIN:           p.TEMP_pinhashed,
+					BibliofilBorrowerNr: p.userid,
+				}); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			if p.TEMP_meråpent_tilgang {
+				if err := doorTempl.Execute(outExt, struct {
+					Code                string
+					BibliofilBorrowerNr string
+				}{
+					Code:                "D",
+					BibliofilBorrowerNr: p.userid,
+				}); err != nil {
+					log.Fatal(err)
+				}
+			}
+			if p.TEMP_meråpent_sperret {
+				if err := doorTempl.Execute(outExt, struct {
+					Code                string
+					BibliofilBorrowerNr string
+				}{
+					Code:                "B",
 					BibliofilBorrowerNr: p.userid,
 				}); err != nil {
 					log.Fatal(err)
@@ -288,9 +312,9 @@ func (m *Main) Run() {
 
 func main() {
 	var (
-		laaner     = flag.String("laaner", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.laaner.20160923-145314.txt", "laaner dump")
-		lmarc      = flag.String("lmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.lmarc.20160923-145331.txt", "lmarc dump")
-		lnel       = flag.String("lnel", "/home/boutros/src/github.com/digibib/ls.ext/migration/data/data.lnel.20160923-145327.txt", "lnel dump")
+		laaner     = flag.String("laaner", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.laaner.20141020-085311.txt", "laaner dump")
+		lmarc      = flag.String("lmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.lmarc.20141020-085326.txt", "lmarc dump")
+		lnel       = flag.String("lnel", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.lnel.20141020-085323.txt", "lnel dump")
 		numWorkers = flag.Int("n", 8, "number of concurrent workers")
 	)
 	outDir = flag.String("outdir", "", "output directory (default to current working directory)")

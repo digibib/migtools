@@ -99,6 +99,8 @@ type patron struct {
 	TEMP_res_transport     string
 	TEMP_pur_transport     string
 	TEMP_fvarsel_transport string
+	TEMP_meråpent_tilgang  bool
+	TEMP_meråpent_sperret  bool
 }
 
 // splitZipCity splits string into zip code and city. If there is no
@@ -201,6 +203,13 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 
 	if strings.Contains(laaner["ln_obs"]+laaner["ln_friobs"], "f") {
 		p.gonenoaddress = true
+	}
+
+	// Meråpent
+	if strings.Contains(laaner["ln_obs"], "D") {
+		p.TEMP_meråpent_tilgang = true
+	} else if strings.Contains(laaner["ln_obs"], "B") {
+		p.TEMP_meråpent_sperret = true
 	}
 
 	// 2) information from lmarc
