@@ -378,7 +378,10 @@ func (m *Main) Run() error {
 							bCode = "ukjent"
 						}
 						// Keep track of which branchcodes that are found, ignoring dfb/fbjl/fnyl
-						if bCode != "dfb" && bCode != "fbjl" && bCode != "fnyl" {
+						switch bCode {
+						case "dfb", "fnyl", "fbjl", "fsor", "fxxx", "idep", "innk", "fbju", "fgab":
+							break
+						default:
 							if newBranch, ok := branchOldToNew[bCode]; ok {
 								bCode = newBranch
 							}
