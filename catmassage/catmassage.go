@@ -684,9 +684,11 @@ func firstVal(r *marc.Record, tag string, code string) string {
 
 func belongsTo(f marc.DField, branchcodes []string) bool {
 	for _, s := range f.SubFields {
-		for _, branch := range branchcodes {
-			if s.Code == "a" && s.Value == branch {
-				return true
+		if s.Code == "a" {
+			for _, branch := range branchcodes {
+				if s.Value == branch {
+					return true
+				}
 			}
 		}
 	}
