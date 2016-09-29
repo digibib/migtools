@@ -372,7 +372,7 @@ func branchesToSlice(branches map[string]string) []Branch {
 }
 
 func patronCSVRow(p patron) []string {
-	row := make([]string, 18)
+	row := make([]string, 19)
 	row[0] = p.userid // bibliofil lånernr
 	row[1] = p.cardnumber
 	row[2] = p.surname
@@ -391,6 +391,7 @@ func patronCSVRow(p patron) []string {
 	row[15] = p.sex
 	row[16] = p.password
 	row[17] = p.dateofbirth
+	row[18] = p.altcontactsurname
 	return row
 }
 

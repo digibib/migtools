@@ -40,7 +40,6 @@ type patron struct {
 		B_email                     string    // `B_email` text
 		B_phone                     string    // `B_phone` mediumtext
 		altcontactfirstname         string    // `altcontactfirstname` varchar(255) DEFAULT NULL,
-		altcontactsurname           string    // `altcontactsurname` varchar(255) DEFAULT NULL,
 		altcontactaddress1          string    // `altcontactaddress1` varchar(255) DEFAULT NULL,
 		altcontactaddress2          string    // `altcontactaddress2` varchar(255) DEFAULT NULL,
 		altcontactaddress3          string    // `altcontactaddress3` varchar(255) DEFAULT NULL,
@@ -65,29 +64,30 @@ type patron struct {
 		flags                       int       // `flags` int(11) DEFAULT NULL,
 		privacy_guarantor_checkouts int       // `privacy_guarantor_checkouts` tinyint(1) NOT NULL DEFAULT '0',
 	*/
-	cardnumber     string // `cardnumber` varchar(16) DEFAULT NULL,
-	userid         string // `userid` varchar(75) DEFAULT NULL,
-	surname        string // `surname` mediumtext NOT NULL,
-	firstname      string // `firstname` text
-	address        string // `address` mediumtext NOT NULL,
-	address2       string // `address2` text
-	city           string // `city` mediumtext NOT NULL,
-	zipcode        string // `zipcode` varchar(25) DEFAULT NULL,
-	country        string // `country` text
-	email          string // `email` mediumtext
-	phone          string // `phone` text
-	smsalertnumber string // `smsalertnumber` varchar(50) DEFAULT NULL,
-	dateofbirth    string // `dateofbirth` date DEFAULT NULL,
-	branchcode     string // `branchcode` varchar(10) NOT NULL DEFAULT '',
-	categorycode   string // `categorycode` varchar(10) NOT NULL DEFAULT '',
-	dateenrolled   string // `dateenrolled` date DEFAULT NULL,
-	dateexpiry     string // `dateexpiry` date DEFAULT NULL,
-	gonenoaddress  bool   // `gonenoaddress` tinyint(1) DEFAULT NULL,
-	lost           bool   // `lost` tinyint(1) DEFAULT NULL,
-	borrowernotes  string // `borrowernotes` mediumtext
-	sex            string // `sex` varchar(1) DEFAULT NULL,
-	password       string // `password` varchar(60) DEFAULT NULL,
-	privacy        int    // `privacy` int(11) NOT NULL DEFAULT '1',
+	cardnumber        string // `cardnumber` varchar(16) DEFAULT NULL,
+	userid            string // `userid` varchar(75) DEFAULT NULL,
+	surname           string // `surname` mediumtext NOT NULL,
+	firstname         string // `firstname` text
+	address           string // `address` mediumtext NOT NULL,
+	address2          string // `address2` text
+	city              string // `city` mediumtext NOT NULL,
+	zipcode           string // `zipcode` varchar(25) DEFAULT NULL,
+	country           string // `country` text
+	email             string // `email` mediumtext
+	phone             string // `phone` text
+	smsalertnumber    string // `smsalertnumber` varchar(50) DEFAULT NULL,
+	dateofbirth       string // `dateofbirth` date DEFAULT NULL,
+	branchcode        string // `branchcode` varchar(10) NOT NULL DEFAULT '',
+	categorycode      string // `categorycode` varchar(10) NOT NULL DEFAULT '',
+	dateenrolled      string // `dateenrolled` date DEFAULT NULL,
+	dateexpiry        string // `dateexpiry` date DEFAULT NULL,
+	gonenoaddress     bool   // `gonenoaddress` tinyint(1) DEFAULT NULL,
+	lost              bool   // `lost` tinyint(1) DEFAULT NULL,
+	borrowernotes     string // `borrowernotes` mediumtext
+	sex               string // `sex` varchar(1) DEFAULT NULL,
+	password          string // `password` varchar(60) DEFAULT NULL,
+	privacy           int    // `privacy` int(11) NOT NULL DEFAULT '1',
+	altcontactsurname string // `altcontactsurname` varchar(255) DEFAULT NULL,
 
 	// Temporary variables that have no matching column in the borrowers table,
 	// but we need the information for further processing or populating borrower-connected tables.
@@ -166,6 +166,7 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 	p.country = laaner["ln_land"]
 	p.phone = laaner["ln_tlf"]
 	p.categorycode = laaner["ln_kat"]
+	p.altcontactsurname = laaner["ln_arbg"]
 
 	switch laaner["ln_kjoenn"] {
 	case "k":
