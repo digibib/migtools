@@ -46,26 +46,29 @@ VALUES
 `
 
 	statusCodes = map[string]marc.SubField{
+	
 		// NOT_LOAN values: (negative value => can be reseved):
-
-		"e": marc.SubField{Code: "7", Value: "-1"}, // i bestilling
-		"n": marc.SubField{Code: "7", Value: "2"},  // ny
-		"c": marc.SubField{Code: "7", Value: "3"},  // til internt bruk
-		"k": marc.SubField{Code: "7", Value: "4"},  // til katalogisering
-		"v": marc.SubField{Code: "7", Value: "5"},  // vurderes kassert
-		"q": marc.SubField{Code: "7", Value: "6"},  // retting
-		"b": marc.SubField{Code: "7", Value: "7"},  // til innbinding
+		"n": marc.SubField{Code: "7", Value: "-1"},  // til klargjøring
+		"c": marc.SubField{Code: "7", Value: "1"},  // til internt bruk
+		"o": marc.SubField{Code: "7", Value: "2"},  // til reparasjon
+		"b": marc.SubField{Code: "7", Value: "2"},  // til reparasjon
+		"q": marc.SubField{Code: "7", Value: "4"},  // retting
+		"m": marc.SubField{Code: "7", Value: "4"},  // retting
 
 		// LOST values:
 		"t": marc.SubField{Code: "1", Value: "1"},  // tapt
-		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
-		"r": marc.SubField{Code: "1", Value: "12"}, // regning sendt
 		"i": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
-		"p": marc.SubField{Code: "1", Value: "5"},  // påstått levert
-		"l": marc.SubField{Code: "1", Value: "6"},  // påstått ikke lånt
+		"V": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
+		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
+		"r": marc.SubField{Code: "1", Value: "12"}, // forlengst forfalt
 		"V": marc.SubField{Code: "1", Value: "9"},  // på vidvanke
-		"a": marc.SubField{Code: "1", Value: "10"}, // retur eieravdeling
-		"y": marc.SubField{Code: "1", Value: "11"}, // til henteavdeling
+		
+		// DAMAGED values:
+		"p": marc.SubField{Code: "4", Value: "2"}, // menes levert
+		"l": marc.SubField{Code: "4", Value: "3"}, // menes ikke lånt
+		
+		// WITHDRAWN values:
+		"v": marc.SubField{Code: "0", Value: "1"}, // vurderes kassert
 	}
 
 	branchOldToNew = map[string]string{
