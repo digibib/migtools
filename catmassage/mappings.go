@@ -61,7 +61,6 @@ VALUES
 		"V": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
 		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
 		"r": marc.SubField{Code: "1", Value: "12"}, // forlengst forfalt
-		"V": marc.SubField{Code: "1", Value: "9"},  // på vidvanke
 		
 		// DAMAGED values:
 		"p": marc.SubField{Code: "4", Value: "2"}, // menes levert
