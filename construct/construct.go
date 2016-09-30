@@ -121,8 +121,18 @@ WHERE {
 			       VALUES (?classEdition ?deweyEdition) {
 			              ("5"      <http://data.deichman.no/classificationSource#ddk5>)
 			              ("d5"     <http://data.deichman.no/classificationSource#ddk5>)
-			              ("d23"    <http://data.dsudeichman.no/classificationSource#ddk23>)
+			              ("d23"    <http://data.deichman.no/classificationSource#ddk23>)
 			              ("23/nor" <http://data.deichman.no/classificationSource#ddk23>)
+			              ("DDC-23" <http://data.deichman.no/classificationSource#ddc23>)
+			              ("DDK-5 " <http://data.deichman.no/classificationSource#ddk5>)
+			              ("22"     <http://data.deichman.no/classificationSource#ddc22>)
+			              ("DDK-5"  <http://data.deichman.no/classificationSource#ddk5>)
+			              ("DDC-22" <http://data.deichman.no/classificationSource#ddc22>)
+			              ("23/no"  <http://data.deichman.no/classificationSource#ddk23>)
+			              ("23nor"  <http://data.deichman.no/classificationSource#ddk23>)
+			              ("23/mus" <http://data.deichman.no/classificationSource#ddk23>)
+			              ("5.utg." <http://data.deichman.no/classificationSource#ddk5>)
+			              ("23/n"   <http://data.deichman.no/classificationSource#ddk23>)
 			        }
 			    }
 	}
