@@ -37,7 +37,7 @@ func main() {
 
 		fmt.Println("DELETE { ?pub :hasHoldingBranch ?branch }")
 		fmt.Printf("INSERT { ?pub :hasHoldingBranch %s . }\n", quoteBranches(rec[1]))
-		fmt.Printf("WHERE { ?pub :recordID %q OPTIONAL { ?pub :hasHoldingBranch ?branch } }\n;\n", rec[0])
+		fmt.Printf("WHERE { ?pub :recordId %q OPTIONAL { ?pub :hasHoldingBranch ?branch } }\n;\n", rec[0])
 	}
 }
 
