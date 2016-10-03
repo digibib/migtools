@@ -213,15 +213,12 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 	}
 
 	// 3) information from lnel
-	if lnel == nil {
-		log.Println("missing lnel record for lnr %s", laaner["ln_lnr"])
-	} else {
+	if lnel != nil {
 		p.email = strings.TrimSpace(lnel["lnel_epost"])
 	}
-	// 3) information from lmarc
 
+	// 3) information from lmarc
 	if lmarc == nil {
-		log.Println("missing lmarc record for lnr %s", laaner["ln_lnr"])
 		return p
 	}
 
