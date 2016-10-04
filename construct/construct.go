@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -16,193 +15,6 @@ import (
 	"github.com/knakk/rdf"
 	"github.com/knakk/sparql"
 )
-
-// SPARQL queries
-const queries = `
-# tag: selectResourceURIs
-WITH <http://deichman.no/migration>
-SELECT DISTINCT ?uri WHERE {
-	?uri a <{{.Type}}> .
-}
-
-# tag: constructResource
-WITH <http://deichman.no/migration>
-CONSTRUCT WHERE {
-	<{{.URI}}> ?p ?o
-}
-
-# tag: constructWorkContributions
-PREFIX     : <http://data.deichman.no/ontology#>
-PREFIX role: <http://data.deichman.no/role#>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> :contributor [
-		:agent ?agent ;
-		:role ?role ;
-		a :Contribution ] .
-}
-WHERE {
-	SELECT DISTINCT ?agent ?role WHERE {
-		?pub :publicationOf <{{.URI}}> .
-		?pub ?role ?agent .
-		VALUES ?role {
-			role:scriptWriter
-			role:actor
-			role:composer
-			role:director
-			role:author
-			role:editor
-			role:lyricist
-			role:adaptor
-		}
-		FILTER NOT EXISTS { ?pub :mainEntry ?agent }
-	}
-}
-
-# tag: constructWorkMainEntryContribution
-PREFIX     : <http://data.deichman.no/ontology#>
-PREFIX role: <http://data.deichman.no/role#>
-PREFIX migration: <http://migration.deichman.no/>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> :contributor [
-		:agent ?agent ;
-		:role ?role ;
-		a :Contribution, :MainEntry ] .
-}
-WHERE {
-	SELECT DISTINCT ?agent ?role WHERE {
-		?pub :publicationOf <{{.URI}}> ;
-		     :mainEntry ?agent ;
-			 migration:mainEntryRole ?role .
-	} LIMIT 1
-}
-
-# tag: constructWorkClassifications
-PREFIX          : <http://data.deichman.no/ontology#>
-PREFIX migration: <http://migration.deichman.no/>
-PREFIX       raw: <http://data.deichman.no/raw#>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> :hasClassification [
-		:hasClassificationNumber ?dewey ;
-		:hasClassificationSource ?deweyEdition ;
-		a :ClassificationEntry ] .
-}
-WHERE {
-	SELECT DISTINCT ?dewey ?deweyEdition WHERE {
-		?pub :publicationOf <{{.URI}}> ;
-			migration:classification ?class .
-		?class raw:classificationNotation ?dewey .
-		OPTIONAL { ?class raw:classificationEdition ?classEdition .
-			       VALUES (?classEdition ?deweyEdition) {
-			              ("5"      <http://data.deichman.no/classificationSource#ddk5>)
-			              ("d5"     <http://data.deichman.no/classificationSource#ddk5>)
-			              ("d23"    <http://data.deichman.no/classificationSource#ddk23>)
-			              ("23/nor" <http://data.deichman.no/classificationSource#ddk23>)
-			              ("DDC-23" <http://data.deichman.no/classificationSource#ddc23>)
-			              ("DDK-5 " <http://data.deichman.no/classificationSource#ddk5>)
-			              ("22"     <http://data.deichman.no/classificationSource#ddc22>)
-			              ("DDK-5"  <http://data.deichman.no/classificationSource#ddk5>)
-			              ("DDC-22" <http://data.deichman.no/classificationSource#ddc22>)
-			              ("23/no"  <http://data.deichman.no/classificationSource#ddk23>)
-			              ("23nor"  <http://data.deichman.no/classificationSource#ddk23>)
-			              ("23/mus" <http://data.deichman.no/classificationSource#ddk23>)
-			              ("5.utg." <http://data.deichman.no/classificationSource#ddk5>)
-			              ("23/n"   <http://data.deichman.no/classificationSource#ddk23>)
-			              ("cdclass"  <http://data.deichman.no/classificationSource#cdclass>)
-			        }
-			    }
-	}
-}
-
-# tag: constructPublication
-PREFIX          : <http://data.deichman.no/ontology#>
-PREFIX      role: <http://data.deichman.no/role#>
-PREFIX migration: <http://migration.deichman.no/>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> ?p ?o ; a :Publication .
-}
-WHERE {
-	<{{.URI}}> ?p ?o .
-	MINUS {
-		<{{.URI}}> ?p ?o .
-		VALUES ?p {
-			:mainEntry
-			migration:series
-			migration:seriesEntry
-			role:scriptWriter
-			role:actor
-			role:photographer
-			role:lyricist
-			role:composer
-			role:director
-			role:performer
-			role:musicalArranger
-			role:reader
-			role:conductor
-			role:author
-			role:translator
-			role:illustrator
-			role:editor
-			role:contributor
-			role:coreographer
-			role:publisher
-			role:adaptor
-		}
-	}
-}
-
-# tag: constructPublicationContributions
-PREFIX     : <http://data.deichman.no/ontology#>
-PREFIX role: <http://data.deichman.no/role#>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> :contributor [
-		:agent ?agent ;
-		:role ?role ;
-		a :Contribution ] .
-}
-WHERE {
-	SELECT DISTINCT ?agent ?role WHERE {
-	<{{.URI}}> a :Publication ;
-			   ?role ?agent .
-	VALUES ?role {
-		role:photographer
-		role:performer
-		role:musicalArranger
-		role:reader
-		role:conductor
-		role:translator
-		role:illustrator
-		role:contributor
-		role:coreographer
-		role:publisher
-		}
-	} LIMIT 1
-}
-
-# tag: constructPublicationSerials
-PREFIX          : <http://data.deichman.no/ontology#>
-PREFIX       raw: <http://data.deichman.no/raw#>
-PREFIX migration: <http://migration.deichman.no/>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> :inSerial [
-		a :SerialIssue ;
-		:serial ?serial ;
-		:issue ?numInSerial ] .
-}
-WHERE {
-	SELECT DISTINCT ?serial ?numInSerial WHERE {
-		<{{.URI}}> migration:seriesEntry ?serialEntry .
-		?serialEntry migration:series ?serial .
-		OPTIONAL { ?serialEntry raw:volumeNumber ?numInSerial . }
-	}
-}
-
-`
 
 var queryBank sparql.Bank
 
@@ -415,7 +227,12 @@ func (m *Main) Run(workers int) {
 }
 
 func init() {
-	queryBank = sparql.LoadBank(bytes.NewBufferString(queries))
+	q, err := os.Open("queries.sparql")
+	if err != nil {
+		log.Fatal(err)
+	}
+	queryBank = sparql.LoadBank(q)
+	q.Close()
 }
 
 func main() {
