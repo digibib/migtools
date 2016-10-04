@@ -94,12 +94,14 @@ getJob:
 				"constructPublication",
 				"constructPublicationContributions",
 				"constructPublicationSerials",
+				"constructPublicationHasPublicationPart",
 			},
 			"work": {
 				"constructResource",
 				"constructWorkMainEntryContribution",
 				"constructWorkContributions",
 				"constructWorkClassifications",
+				"constructWorkBasedOn",
 			},
 			"person": {
 				"constructResource",
