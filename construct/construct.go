@@ -31,29 +31,6 @@ CONSTRUCT WHERE {
 	<{{.URI}}> ?p ?o
 }
 
-# tag: constructWork
-PREFIX : <http://data.deichman.no/ontology#>
-WITH <http://deichman.no/migration>
-CONSTRUCT {
-	<{{.URI}}> a :Work ;
-			?pred ?obj .
-}
-WHERE {
-	<{{.URI}}> a :Work ;
-			?pred ?obj .
-	VALUES ?pred { :mainTitle
-				   :partTitle
-				   :literaryForm
-				   :audience
-				   :language
-				   :genre
-				   :subject
-				   :mediaType
-				   :publicationYear
-				   :hasCompositionType
-				 }
-}
-
 # tag: constructWorkContributions
 PREFIX     : <http://data.deichman.no/ontology#>
 PREFIX role: <http://data.deichman.no/role#>
@@ -307,7 +284,7 @@ getJob:
 				"constructPublicationSerials",
 			},
 			"work": {
-				"constructWork",
+				"constructResource",
 				"constructWorkMainEntryContribution",
 				"constructWorkContributions",
 				"constructWorkClassifications",
