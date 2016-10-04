@@ -102,6 +102,8 @@ getJob:
 				"constructWorkContributions",
 				"constructWorkClassifications",
 				"constructWorkBasedOn",
+				"constructWorkFollows",
+				"constructWorkContinues",
 			},
 			"person": {
 				"constructResource",
