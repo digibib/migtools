@@ -133,6 +133,7 @@ WHERE {
 			              ("23/mus" <http://data.deichman.no/classificationSource#ddk23>)
 			              ("5.utg." <http://data.deichman.no/classificationSource#ddk5>)
 			              ("23/n"   <http://data.deichman.no/classificationSource#ddk23>)
+			              ("cdclass"  <http://data.deichman.no/classificationSource#cdclass>)
 			        }
 			    }
 	}
