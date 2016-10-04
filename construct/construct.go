@@ -228,22 +228,21 @@ func (m *Main) Run(workers int) {
 	close(m.complete)
 }
 
-func init() {
-	q, err := os.Open("queries.sparql")
-	if err != nil {
-		log.Fatal(err)
-	}
-	queryBank = sparql.LoadBank(q)
-	q.Close()
-}
-
 func main() {
+	queryFile := flag.String("qf", "/out/constructs.sparql", "sparql queries fiel")
 	services := flag.String("se", "http://localhost:8005", "services endpoint")
 	virtuoso := flag.String("ve", "http://localhost:8890/sparql", "virtuoso endpoint")
 	numWorkers := flag.Int("n", 3, "number of workers")
 	limit := flag.Int("l", -1, "limit to n resources")
 
 	flag.Parse()
+
+	q, err := os.Open(*queryFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	queryBank = sparql.LoadBank(q)
+	q.Close()
 
 	vURL, err := url.Parse(*virtuoso)
 	if err != nil {
