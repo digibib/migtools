@@ -186,9 +186,11 @@ func (m *Main) Run() {
 				if err := bsyncTempl.Execute(outBranchSync, struct {
 					HashedPIN           string
 					BibliofilBorrowerNr string
+					LastSync            string
 				}{
 					HashedPIN:           p.TEMP_pinhashed,
 					BibliofilBorrowerNr: p.userid,
+					LastSync:            p.TEMP_nl_lastsync,
 				}); err != nil {
 					log.Fatal(err)
 				}

@@ -96,6 +96,7 @@ func TestPatronMerge(t *testing.T) {
 		TEMP_personnr:          "02031145555",
 		TEMP_pinhashed:         "9a925d1cebb962b1629f75f2540bbde0",
 		TEMP_nl:                true,
+		TEMP_nl_lastsync:       "2015-06-30T13:24:45",
 		TEMP_res_transport:     "epost",
 		TEMP_pur_transport:     "epost",
 		TEMP_fvarsel_transport: "epost",

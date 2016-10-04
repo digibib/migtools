@@ -95,6 +95,7 @@ type patron struct {
 	TEMP_personnr          string
 	TEMP_pinhashed         string
 	TEMP_nl                bool
+	TEMP_nl_lastsync       string
 	TEMP_hjemmebibnr       string
 	TEMP_res_transport     string
 	TEMP_pur_transport     string
@@ -301,6 +302,8 @@ func merge(lmarc *marc.Record, laaner, lnel map[string]string) patron {
 			if v := firstSub(f.SubFields, "b"); len(v) >= 11 {
 				p.TEMP_personnr = v
 			}
+		case "607":
+			p.TEMP_nl_lastsync = firstSub(f.SubFields, "c")
 		}
 	}
 

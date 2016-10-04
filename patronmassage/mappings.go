@@ -37,11 +37,12 @@ FROM borrowers
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
 `
 	borrwersyncTemplSQL = `
-INSERT IGNORE INTO borrower_sync (borrowernumber, synctype, sync, syncstatus, hashed_pin)
+INSERT IGNORE INTO borrower_sync (borrowernumber, synctype, sync, syncstatus, lastsync, hashed_pin)
 SELECT borrowers.borrowernumber,
        'norwegianpatrondb',
        1,
        'synced',
+       '{{.LastSync}}',
        '{{.HashedPIN}}'
 FROM borrowers
 WHERE borrowers.userid = '{{.BibliofilBorrowerNr}}';
