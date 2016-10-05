@@ -280,7 +280,10 @@ func (m *Main) Run() error {
 
 		// Add 942 field (record level item type)
 		v := strings.TrimSpace(strings.ToLower(firstVal(r, "019", "b")))
-		if strings.Contains(v, "dh") {
+		if v == "ge" || v == "ib" || v == "ic" || v == "co" {
+			// Skip nettressurser, arkivmapper og mikrofilm
+			continue
+		} else if strings.Contains(v, "dh") {
 			v = "SPRAAKKURS"
 		} else if rgxLydbok.MatchString(v) {
 			v = "LYDBOK"
