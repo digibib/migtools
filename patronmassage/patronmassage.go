@@ -201,7 +201,7 @@ func (m *Main) Run() {
 					Code                string
 					BibliofilBorrowerNr string
 				}{
-					Code:                "D",
+					Code:                "1",
 					BibliofilBorrowerNr: p.userid,
 				}); err != nil {
 					log.Fatal(err)
