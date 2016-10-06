@@ -104,6 +104,7 @@ getJob:
 				"constructWorkBasedOn",
 				"constructWorkFollows",
 				"constructWorkContinues",
+				"constructWorkIsPartOfWork",
 			},
 			"person": {
 				"constructResource",
