@@ -448,7 +448,7 @@ func (m *Main) Run() error {
 						if v := getValue(scanner.Bytes()); v == "e" || v == "r" {
 							// autorisert verdi:
 							// referanseverk: ikke til utlån
-							f.SubFields = append(f.SubFields, marc.SubField{Code: "5", Value: "2"})
+							f.SubFields = append(f.SubFields, marc.SubField{Code: "7", Value: "8"})
 						}
 					case "ex_laanr":
 						issue.BibliofilBorrowerNr = strings.TrimPrefix(getValue(scanner.Bytes()), "-")
