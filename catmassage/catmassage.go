@@ -77,6 +77,8 @@ func init() {
 	log.SetPrefix("catmassage: ")
 }
 
+var outMARCXML bool
+
 func main() {
 	var (
 		vmarc  = flag.String("vmarc", "/home/boutros/src/github.com/digibib/ls.ext/migration/example_data/data.vmarc.20141020-084813.txt", "catalogue database in line-marc")
@@ -86,6 +88,7 @@ func main() {
 		skip   = flag.Int("skip", 0, "skip first n records")
 		outDir = flag.String("outdir", "", "output directory (default to current working directory)")
 	)
+	flag.BoolVar(&outMARCXML, "marcxml", false, "output merged records in marcxml instead of ISOmarc")
 
 	flag.Parse()
 
@@ -241,7 +244,12 @@ func (m *Main) Run() error {
 
 	// Initialize encoders
 	dec := marc.NewDecoder(m.vmarc, marc.LineMARC)
-	encMARC := marc.NewEncoder(m.outMerged, marc.MARC)
+	var encMARC *marc.Encoder
+	if outMARCXML {
+		encMARC = marc.NewEncoder(m.outMerged, marc.MARCXML)
+	} else {
+		encMARC = marc.NewEncoder(m.outMerged, marc.MARC)
+	}
 	encMARCXML := marc.NewEncoder(m.outNoItems, marc.MARCXML)
 	encFbjl := marc.NewEncoder(m.outBjornholt, marc.MARCXML)
 	encFnyl := marc.NewEncoder(m.outNydalen, marc.MARCXML)
