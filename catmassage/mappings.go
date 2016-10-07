@@ -60,14 +60,12 @@ VALUES
 		"i": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
 		"V": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
 		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
+		"p": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
+		"l": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
 		
 		// DAMAGED values:
-		"p": marc.SubField{Code: "4", Value: "2"}, // menes levert
-		"l": marc.SubField{Code: "4", Value: "3"}, // menes ikke lånt
 		"r": marc.SubField{Code: "4", Value: "4"}, // regning
-		
-		// WITHDRAWN values:
-		"v": marc.SubField{Code: "0", Value: "1"}, // vurderes kassert
+		"v": marc.SubField{Code: "4", Value: "5"}, // vurderes kassert
 	}
 
 	branchOldToNew = map[string]string{
