@@ -46,9 +46,9 @@ VALUES
 `
 
 	statusCodes = map[string]marc.SubField{
-	
+
 		// NOT_LOAN values: (negative value => can be reseved):
-		"n": marc.SubField{Code: "7", Value: "-1"},  // til klargjøring
+		"n": marc.SubField{Code: "7", Value: "-1"}, // til klargjøring
 		"c": marc.SubField{Code: "7", Value: "1"},  // til internt bruk
 		"o": marc.SubField{Code: "7", Value: "2"},  // til reparasjon
 		"b": marc.SubField{Code: "7", Value: "2"},  // til reparasjon
@@ -56,13 +56,13 @@ VALUES
 		"m": marc.SubField{Code: "7", Value: "4"},  // retting
 
 		// LOST values:
-		"t": marc.SubField{Code: "1", Value: "1"},  // tapt
-		"i": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
-		"V": marc.SubField{Code: "1", Value: "4"},  // ikke på plass
-		"S": marc.SubField{Code: "1", Value: "8"},  // tapt, regning betalt
+		"t": marc.SubField{Code: "1", Value: "1"}, // tapt
+		"i": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
+		"V": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
+		"S": marc.SubField{Code: "1", Value: "8"}, // tapt, regning betalt
 		"p": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
 		"l": marc.SubField{Code: "1", Value: "4"}, // ikke på plass
-		
+
 		// DAMAGED values:
 		"r": marc.SubField{Code: "4", Value: "4"}, // regning
 		"v": marc.SubField{Code: "4", Value: "5"}, // vurderes kassert
