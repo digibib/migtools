@@ -60,7 +60,7 @@ func main() {
 		{
 			Name:          "publications",
 			Bibliofil:     `ls -1 /data/*vmarc.*.txt | xargs cat | grep "*001" | wc -l`,
-			Prepared:      `cat /out/catalogue.mrc | grep -o $'\035' | wc -l`,
+			Prepared:      `cat /out/catalogue.mrc | grep -o "</record>" | wc -l`,
 			Koha:          mysqlCount("SELECT COUNT(*) FROM biblioitems"),
 			Fuseki:        sparql("SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?p a <http://data.deichman.no/ontology#Publication> }"),
 			Elasticsearch: esCount("publication"),
@@ -68,7 +68,7 @@ func main() {
 		{
 			Name:          "items",
 			Bibliofil:     `ls -1 /data/*exemp.*.txt | xargs cat | grep "ex_titnr" | wc -l`,
-			Prepared:      `cat /out/catalogue.mrc | grep -o 'p0301' | wc -l`,
+			Prepared:      `cat /out/catalogue.mrc | grep -o '"p">0301' | wc -l`,
 			Koha:          mysqlCount("SELECT COUNT(*) FROM items"),
 			Fuseki:        "",
 			Elasticsearch: "",
