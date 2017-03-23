@@ -95,12 +95,12 @@ getJob:
 				"constructPublicationContributions",
 				"constructPublicationSerials",
 				"constructPublicationHasPublicationPart",
+				"constructPublicationClassifications",
 			},
 			"work": {
 				"constructResource",
 				"constructWorkMainEntryContribution",
 				"constructWorkContributions",
-				"constructWorkClassifications",
 				"constructWorkBasedOn",
 				"constructWorkFollows",
 				"constructWorkContinues",
